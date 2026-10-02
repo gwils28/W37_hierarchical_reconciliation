@@ -1,4 +1,4 @@
-"""Point d'entrée : `uv run w37 mint` (bloc 2) et `uv run w37 job` (bloc 3)."""
+"""Point d'entrée : `w37 mint` (bloc 2), `w37 job` (bloc 3), `w37 biais` et `w37 quantiles` (bloc 4)."""
 from __future__ import annotations
 
 import argparse
@@ -53,6 +53,29 @@ def _cmd_job(args: argparse.Namespace) -> int:
     return 2
 
 
+def _cmd_biais(args: argparse.Namespace) -> int:
+    from .fundamentals import bias_counterexample, bias_sweep
+
+    print("Contre-exemple : biais de +15 sur le seul total, W = diag(1, 9, 9, 9)\n")
+    print(bias_counterexample().round(3).to_string())
+    print("\nMonte-Carlo : MAE par niveau selon le biais du total (total σ=1, feuilles σ=3)\n")
+    sweep = bias_sweep([0, 2, 4, 6, 8]).pivot(index="biais", columns="méthode")
+    print(sweep.round(3).to_string())
+    return 0
+
+
+def _cmd_quantiles(args: argparse.Namespace) -> int:
+    from .fundamentals import bootstrap_coverage, coverage_experiment, rho_sweep
+
+    print(f"Couverture empirique des quantiles 90 % (graine 37, rho = {args.rho})\n")
+    print(coverage_experiment(rho=args.rho).round(3).to_string())
+    print("\nBalayage en rho (niveau total)\n")
+    print(rho_sweep().round(3).to_string(index=False))
+    print("\nEn pratique : bootstrap des résidus in-sample (T = 200)\n")
+    print(bootstrap_coverage(rho=args.rho).round(3).to_string())
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="w37", description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -69,6 +92,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--output-dir", type=Path, default=Path("03_system_design/outputs"))
     p.add_argument("--source", default="demo_region_canal@v1", help="source versionnée de la hiérarchie")
     p.set_defaults(func=_cmd_job)
+
+    p = sub.add_parser("biais", help="bloc 4 : MinT propage le biais d'une seule prévision de base")
+    p.set_defaults(func=_cmd_biais)
+
+    p = sub.add_parser("quantiles", help="bloc 4 : MinT réconcilie des moyennes, pas des quantiles")
+    p.add_argument("--rho", type=float, default=0.6, help="corrélation entre régions")
+    p.set_defaults(func=_cmd_quantiles)
 
     args = parser.parse_args(argv)
     return args.func(args)

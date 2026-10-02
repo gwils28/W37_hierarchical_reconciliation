@@ -21,19 +21,28 @@ def schafer_strimmer_lambda(E: np.ndarray, center: bool = False) -> float:
     E      : résidus (T × m).
     center : recentrer les résidus avant de standardiser. Le squelette du plan suppose des
              résidus one-step centrés (center=False) ; HierarchicalForecast aussi pour λ.
+
+    Seules des sommes hors diagonale interviennent : on les calcule sans jamais former le tenseur
+    (T, m, m) des produits croisés ni la matrice r (m × m). Mémoire O(T² + T·m) au lieu de O(T·m²)
+    (31 Go pour m = 5 000, T = 156) :
+
+        Σ_{i≠j} r_ij²             = ‖X X'‖²_F / T² − Σ_i r_ii²         (Gram T × T)
+        Σ_{i≠j} Σ_k x_ki² x_kj²   = Σ_k [(Σ_i x_ki²)² − Σ_i x_ki⁴]
+        Σ_{i≠j} Var(r_ij)         = T / (T − 1)³ · (ligne précédente − T · Σ_{i≠j} r_ij²)
     """
     T, m = E.shape
     if center:
         E = E - E.mean(axis=0)
     X = E / np.sqrt((E**2).mean(axis=0))          # résidus standardisés
-    Wk = X[:, :, None] * X[:, None, :]             # (T, m, m) : produits croisés à chaque instant
-    r = Wk.mean(axis=0)                            # corrélations empiriques
-    var_r = T / (T - 1) ** 3 * ((Wk - r) ** 2).sum(axis=0)
-    off = ~np.eye(m, dtype=bool)
-    denom = (r[off] ** 2).sum()
-    if denom == 0:
+    X2 = X**2
+    r_diag = X2.mean(axis=0)                       # r_ii (= 1 sans centrage)
+    gram = X @ X.T                                 # (T, T)
+    sum_r2_off = (gram**2).sum() / T**2 - (r_diag**2).sum()
+    sum_w2_off = ((X2.sum(axis=1)) ** 2 - (X2**2).sum(axis=1)).sum()
+    sum_var_off = T / (T - 1) ** 3 * (sum_w2_off - T * sum_r2_off)
+    if sum_r2_off <= 0:
         return 1.0
-    return float(np.clip(var_r[off].sum() / denom, 0.0, 1.0))
+    return float(np.clip(sum_var_off / sum_r2_off, 0.0, 1.0))
 
 
 @dataclass(frozen=True)
