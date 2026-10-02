@@ -6,21 +6,26 @@
 ## Ce qui a été fait
 
 1. **Décision d'architecture** rédigée, avec les trade-offs et des critères de bascule écrits à l'avance (ci-dessous).
-2. **Contrat** [`reconciliation.yaml`](reconciliation.yaml) v3 repris du plan, plus quelques ajouts marqués `# [ajout]`.
-   Ces ajouts rendent exécutables des règles que le plan ne donnait qu'en commentaire.
-3. **Briques exécutables** dans [`reconciliation_job.py`](reconciliation_job.py) :
-   - `hash_check` : refuse le run si `S` a changé sans bump de version de la source ;
-   - `choose_method` : garde `mint_shrink`, ou bascule sur `wls_struct` si `W` est inutilisable ;
-   - `quality_gate` : contrôle la cohérence, la part de négatifs et le MASE **par niveau** contre le bottom-up.
-4. **Tests** ([`test_reconciliation_job.py`](test_reconciliation_job.py)) : **11 tests verts**. Chaque règle du
-   contrat a au moins un test où elle **échoue**, sinon on ne sait pas si elle protège quelque chose.
-5. **Run de bout en bout** ([`demo_job.py`](demo_job.py)) sur la hiérarchie du bloc 2. Il produit un artefact
-   immuable partitionné par `run_id`, avec sa lignée dans `_lineage.json`. Log : [`outputs/demo_run.log`](outputs/demo_run.log).
+2. **Contrat** [`configs/reconciliation.yaml`](../configs/reconciliation.yaml) v3 repris du plan, plus quelques
+   ajouts marqués `# [ajout]`. Ces ajouts rendent exécutables des règles que le plan ne donnait qu'en commentaire.
+3. **Briques exécutables** dans [`src/w37_reconciliation/pipeline/`](../src/w37_reconciliation/pipeline/) :
+   - `hierarchy.hash_check` : refuse le run si `S` a changé sans bump de version de la source ;
+   - `method_selection.choose_method` : garde `mint_shrink`, ou bascule sur `wls_struct` si `W` est inutilisable.
+     Le calcul de λ y est le même qu'au bloc 2 (`mint.shrinkage`) ;
+   - `quality_gate.quality_gate` : contrôle la cohérence, la part de négatifs et le MASE **par niveau** contre le
+     bottom-up ;
+   - `job.run_job` : enchaîne le tout et publie un artefact immuable partitionné par `run_id`, avec sa lignée
+     (`_lineage.json`) et le rapport du gate (`_gate.json`).
+4. **Tests** : 13 tests unitaires (`tests/unit/test_quality_gate.py`, `tests/unit/test_pipeline_guards.py`) et
+   2 tests d'intégration (`tests/integration/test_job.py`). Chaque règle du contrat a au moins un test où elle
+   **échoue**, sinon on ne sait pas si elle protège quelque chose.
 
 ```bash
-.venv/bin/pytest -q 03_system_design
-cd 03_system_design && ../.venv/bin/python demo_job.py
+uv run w37 job                                   # un run complet
+uv run pytest tests/unit/test_quality_gate.py tests/unit/test_pipeline_guards.py tests/integration/test_job.py
 ```
+
+Pas à pas complet, avec trois expériences pour voir le gate bloquer : **[TUTORIEL.md](TUTORIEL.md)**.
 
 ## Architecture retenue
 
@@ -62,18 +67,18 @@ pour supprimer. **La cohérence est une propriété de l'artefact, pas de la req
 
 | Constat | Conséquence dans le YAML / le code |
 |---|---|
-| `fallback: wls_struct  # si … (m > T)` : le plan déclenche le repli quand m > T. Or le bloc 2 montre que le shrinkage **existe précisément pour m > T** (cond 1,7e17 → 10). | `residuals_fewer_than_series: false`. Le repli se déclenche sur un critère **mesuré**, `cond(W_shrink) > 1e10`, et non sur la forme. Le test `test_choose_method_keeps_mint_shrink_when_m_exceeds_T` (m = 50, T = 30) le fige. |
+| `fallback: wls_struct  # si … (m > T)` : le plan déclenche le repli quand m > T. Or le bloc 2 montre que le shrinkage **existe précisément pour m > T** (cond 1,7e17 → 10). | `residuals_fewer_than_series: false`. Le repli se déclenche sur un critère **mesuré**, `cond(W_shrink) > 1e10`, et non sur la forme. Le test `test_keeps_mint_shrink_when_m_exceeds_T` (m = 50, T = 30) le fige. |
 | Avec `covariance_window: 104` semaines et un catalogue de 4 000 séries, on a toujours m ≫ T. | Le repli ne doit **pas** dépendre de m/T, sinon `mint_shrink` ne tournerait jamais en production. |
-| `coherence_tol_abs: 1e-6` n'a pas le même sens sur 10 MW et sur 50 GW (bruit flottant ≈ 1e-16 × valeur). | Ajout de `coherence_tol_rel: 1e-9` : le gate passe si l'un **ou** l'autre seuil est respecté (`test_gate_tolerates_float_noise_on_large_values`). |
-| « Dégradation MASE > 2 % à **un** niveau quelconque » | Règle appliquée niveau par niveau, jamais en moyenne. Le scénario du bloc 4 (national −30 %, feuilles +5 %) est **bloqué** (`test_gate_blocks_mase_degradation_at_any_level`). |
+| `coherence_tol_abs: 1e-6` n'a pas le même sens sur 10 MW et sur 50 GW (bruit flottant ≈ 1e-16 × valeur). | Ajout de `coherence_tol_rel: 1e-9` : le gate passe si l'un **ou** l'autre seuil est respecté (`test_tolerates_float_noise_on_large_values`). |
+| « Dégradation MASE > 2 % à **un** niveau quelconque » | Règle appliquée niveau par niveau, jamais en moyenne. Le scénario du bloc 4 (national −30 %, feuilles +5 %) est **bloqué** (`test_blocks_mase_degradation_at_any_level`). |
 | `level_weights` est rangé sous `quality_gate`, mais une pondération par niveau agit sur l'**objectif** de la réconciliation (bloc 4, 2606.23009), pas sur un contrôle. | Dans le gate, il ne sert qu'à **rapporter** un `weighted_mase_delta`. La règle bloquante reste « aucun niveau ne se dégrade ». |
-| Un NaN dans une feuille casse silencieusement la cohérence (bloc 5). | Le gate bloque aussi les valeurs non finies (`test_gate_blocks_nan`). |
+| Un NaN dans une feuille casse silencieusement la cohérence (bloc 5). | Le gate bloque aussi les valeurs non finies (`test_blocks_nan`). |
 | « Hash de S » : une feuille **renommée** change la hiérarchie sans changer la matrice. | Le hash couvre les valeurs **et** les libellés (`test_hash_check_refuses_changed_structure_without_bump`). |
 | Pour rejouer un chiffre publié, `run_id` ne suffit pas. | Ajout de `outputs.lineage` : `s_hash`, `w_version` (fenêtre + date de fin), méthode effectivement utilisée et raison, versions des bibliothèques. |
 
 ## Résultat du run de démonstration
 
-`mint_shrink` est retenu (T = 72, m = 6, cond(W) = 22). Gate **vert**, artefact publié :
+`mint_shrink` est retenu (T = 72, m = 6, cond(W) ≈ 23). Gate **vert**, artefact publié :
 
 | Niveau | MASE MinT(shrink) | MASE bottom-up | Δ |
 |---|---|---|---|

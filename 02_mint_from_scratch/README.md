@@ -6,12 +6,34 @@
 ## Lancer
 
 ```bash
-python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/python 02_mint_from_scratch/mint_from_scratch.py
+uv sync                  # une fois
+uv run w37 mint          # les assertions + le diagnostic, en ≈ 3 s
+uv run jupyter lab 02_mint_from_scratch/notebooks
 ```
 
+Pas à pas complet : **[TUTORIEL.md](TUTORIEL.md)**.
+
 Environnement de référence : Python 3.12, `numpy 2.5.3`, `pandas 2.3.3`, `statsforecast 2.1.1`,
-`hierarchicalforecast 1.5.1` (épinglée pour comparer au chiffre du plan). Logs : [`outputs/`](outputs/).
+`hierarchicalforecast 1.5.1` (épinglée pour comparer au chiffre du plan), verrouillés dans `uv.lock`.
+
+## Les notebooks
+
+| # | Notebook | Contenu |
+|---|---|---|
+| 01 | [`01_hierarchie_et_previsions_de_base`](notebooks/01_hierarchie_et_previsions_de_base.ipynb) | matrice `S`, séries par niveau, prévisions de base incohérentes, résidus in-sample |
+| 02 | [`02_covariance_et_shrinkage`](notebooks/02_covariance_et_shrinkage.ipynb) | $W_1$, corrélations, λ de Schäfer–Strimmer calculé pas à pas, mur `m > T` |
+| 03 | [`03_projection_mint`](notebooks/03_projection_mint.ipynb) | géométrie de la projection oblique, $G$, $P$, BottomUp vs OLS vs MinT |
+| 04 | [`04_equivalence_bibliotheque`](notebooks/04_equivalence_bibliotheque.ipynb) | écart à `HierarchicalForecast` et sa décomposition, MASE par niveau |
+
+## Le code
+
+| Brique | Fichier |
+|---|---|
+| λ de Schäfer–Strimmer, covariance rétrécie | `src/w37_reconciliation/mint/shrinkage.py` |
+| $G$, $P$, réconciliation | `src/w37_reconciliation/mint/projection.py` |
+| Les assertions | `src/w37_reconciliation/mint/checks.py` |
+| Expérience complète, décomposition de l'écart | `src/w37_reconciliation/mint/experiment.py` |
+| Tests | `tests/unit/test_shrinkage.py`, `tests/unit/test_projection.py`, `tests/integration/test_mint_vs_library.py` |
 
 ## Ce qui a été fait
 
@@ -32,6 +54,8 @@ Environnement de référence : Python 3.12, `numpy 2.5.3`, `pandas 2.3.3`, `stat
 
 ## Résultats (hierarchicalforecast 1.5.1 — identiques au bit près en 1.5.3)
 
+Sortie de `uv run w37 mint` :
+
 ```
 series (m) = 6, feuilles (nb) = 4, residus (T) = 72
 lambda SS  : 0.113325
@@ -39,12 +63,18 @@ P^2 == P   : 2.220e-16
 SGS == S   : 2.220e-16
 incoherence: 5.684e-14
 ecart rel. : 1.074e-05   (abs. 1.772e-03 sur des valeurs ~165)
-OK : 3 assertions vertes
-decomposition de l'ecart absolu a la lib :
-  base E'E/T   + lambda non centre (0.113325) : 1.772e-03
-  base np.cov  + lambda non centre (0.113325) : 3.263e-06
-  base np.cov  + lambda centre     (0.116517) : 4.544e-04
-m > T : T'=4, rang(W1)=4/6, cond(W1)=1.7e+17 -> lambda=0.907, cond(W_shrink)=1.0e+01
+  [OK] SGS == S (< 1e-12)
+  [OK] incoherence (< 1e-9)
+  [OK] ecart lib (< 1e-3)
+  [OK] ecart lib non nul
+
+decomposition de l'ecart a la bibliotheque :
+  covariance de base λ estimé sur résidus         λ  écart absolu
+        E'E/T (plan)           non centré 1.133e-01     1.772e-03
+np.cov, ddof=1 (lib)           non centré 1.133e-01     3.263e-06
+np.cov, ddof=1 (lib)               centré 1.165e-01     4.544e-04
+
+piege m > T : {"T": 4, "m": 6, "rank_W1": 4, "cond_W1": 1.67e+17, "lambda": 0.907, "cond_W": 10.06}
 ```
 
 | Critère « c'est fini quand… » | Seuil | Mesuré | |
@@ -68,7 +98,7 @@ plusieurs estimateurs candidats :
 | non centrée, `/(T−1)` | 6,9e-2 |
 
 Le rapport des corrélations hors diagonale donne un λ de bibliothèque de **0,113303**, contre **0,113325** chez moi.
-Les deux λ sont donc quasiment identiques. La décomposition de l'écart absolu (1,77e-3) montre :
+Les deux λ sont donc quasiment identiques (vérification dans le notebook 04). La décomposition de l'écart absolu (1,77e-3) montre :
 
 - **≈ 99,8 %** de l'écart vient de la **covariance de base** : la bibliothèque centre les résidus et divise par
   `T−1` (`np.cov`), alors que le squelette du plan prend `E'E/T`. Avec la même base, l'écart tombe à **3,3e-6**.
@@ -83,8 +113,8 @@ compare deux runs, ça se voit. Il faut donc épingler la version **et** documen
 
 ## Les pièges, côté code
 
-| Piège | Ce que fait le script |
+| Piège | Ce que fait le code |
 |---|---|
-| **Fuite n°1** : `W` estimée sur des résidus du test, ou `Y_df=Y_df` passé à `reconcile()` | `reconcile(..., Y_df=Y_fit)` et assertion `Y_fit.ds.max() < test.ds.min()`. |
+| **Fuite n°1** : `W` estimée sur des résidus du test, ou `Y_df=Y_df` passé à `reconcile()` | `reconcile(..., Y_df=Y_fit)`, et `run_mint_experiment` lève une erreur si `Y_fit.ds.max() >= test.ds.min()`. |
 | **Fuite n°2** : `TopDown(average_proportions)` sur l'historique complet | Pas de TopDown ici. À traiter dans la quality gate du bloc 3 : les proportions doivent être calculées sur une fenêtre strictement antérieure. |
 | **Mur `m > T`** | Avec T' = 4 < m = 6 : `W1` est de rang 4/6 (cond ≈ 1,7e17, donc inutilisable). Le shrinkage choisit tout seul λ = 0,907 et ramène le conditionnement à ≈ 10. **Le shrinkage est une condition d'existence, pas une commodité.** |
