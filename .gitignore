@@ -10,3 +10,6 @@ __pycache__/
 
 # instructions locales pour Claude Code, non versionnées
 CLAUDE.md
+
+# données éCO2mix téléchargées et résultats du backtest (régénérables : `w37 eco2mix …`)
+data/

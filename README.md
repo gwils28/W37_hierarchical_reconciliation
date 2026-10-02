@@ -1,23 +1,25 @@
 # W37 — « Cohérent ne veut pas dire calibré »
 
 Veille hebdomadaire, semaine ISO 2026-W37 : la réconciliation hiérarchique, de MinT ponctuel au probabiliste.
-Le plan complet est dans [`W37.md`](W37.md). Ce dépôt couvre pour l'instant les **blocs 1 à 4**.
+Le plan complet est dans [`W37.md`](W37.md). Ce dépôt couvre pour l'instant les **blocs 1 à 5**.
 
 ## Démarrage rapide
 
 ```bash
 uv sync                  # Python 3.12 + dépendances verrouillées (uv.lock)
-uv run pytest            # 53 tests
+uv run pytest            # 75 tests
 uv run w37 mint          # bloc 2 : MinT(shrink) maison vs HierarchicalForecast
 uv run w37 job           # bloc 3 : un run du job de réconciliation avec quality gate
 uv run w37 biais         # bloc 4 : MinT propage le biais d'une seule prévision de base
 uv run w37 quantiles     # bloc 4 : MinT réconcilie des moyennes, pas des quantiles
+make eco2mix             # bloc 5 : données éCO2mix (téléchargées), backtest, rapport
 uv run jupyter lab
 ```
 
-Les mêmes commandes existent en raccourci `make` : `make install | test | test-fast | lint | mint | job | biais | quantiles | notebooks | lab`.
+Les mêmes commandes existent en raccourci `make` : `make install | test | test-fast | lint | mint | job | biais | quantiles | eco2mix | eco2mix-robustness |
+notebooks | lab`.
 Tutoriels pas à pas : [bloc 2](02_mint_from_scratch/TUTORIEL.md) · [bloc 3](03_system_design/TUTORIEL.md) ·
-[bloc 4](04_fondamentaux/TUTORIEL.md).
+[bloc 4](04_fondamentaux/TUTORIEL.md) · [bloc 5](05_mini_projet_eco2mix/TUTORIEL.md).
 
 ## Organisation
 
@@ -26,18 +28,20 @@ Tutoriels pas à pas : [bloc 2](02_mint_from_scratch/TUTORIEL.md) · [bloc 3](03
 ├── pyproject.toml / uv.lock / .python-version   # projet uv, versions épinglées, Python 3.12
 ├── Makefile                                     # raccourcis
 ├── configs/
-│   └── reconciliation.yaml                      # contrat du job (bloc 3)
+│   ├── reconciliation.yaml                      # contrat du job (bloc 3)
+│   └── eco2mix.yaml                             # protocole du mini-projet, fixé avant les résultats (bloc 5)
 ├── src/w37_reconciliation/                      # le package
 │   ├── data.py                                  # hiérarchie synthétique, découpage, format large
 │   ├── forecasting.py                           # prévisions de base + résidus in-sample
 │   ├── mint/                                    # bloc 2 : shrinkage, projection, assertions, expérience
 │   ├── pipeline/                                # bloc 3 : contrat, hash de S, choix de méthode, gate, job
 │   ├── fundamentals/                            # bloc 4 : biais, quantiles A/B/C, bootstrap, diagnostics
+│   ├── eco2mix/                                 # bloc 5 : source, préparation, backtest, métriques, tests
 │   ├── viz.py                                   # style des graphiques
 │   └── cli.py                                   # commande `w37`
 ├── tests/
-│   ├── unit/                                    # 46 tests rapides, sans entraînement de modèle
-│   └── integration/                             # 7 tests de bout en bout (marqueur `slow`)
+│   ├── unit/                                    # 64 tests rapides, sans entraînement de modèle
+│   └── integration/                             # 11 tests de bout en bout (marqueur `slow`)
 ├── 01_veille/
 │   ├── README.md                                # ressources vérifiées, synthèse, « ce qui est surcoté »
 │   ├── GUIDE_RECONCILIATION.md                  # guide d'introduction : MinT et lecture des articles
@@ -49,11 +53,19 @@ Tutoriels pas à pas : [bloc 2](02_mint_from_scratch/TUTORIEL.md) · [bloc 3](03
 ├── 03_system_design/
 │   ├── README.md                                # décision d'architecture, trade-offs, critères de bascule
 │   └── TUTORIEL.md                              # relancer le bloc 3, expériences sur le gate
-└── 04_fondamentaux/
-    ├── README.md                                # cadre, biais, quantiles, mur numérique, question d'entretien
-    ├── TUTORIEL.md                              # relancer le bloc 4, expériences à faire soi-même
-    ├── notebooks/                               # 3 notebooks pédagogiques, exécutés
-    └── figures/                                 # 7 figures SVG (README et article)
+├── 04_fondamentaux/
+│   ├── README.md                                # cadre, biais, quantiles, mur numérique, question d'entretien
+│   ├── TUTORIEL.md                              # relancer le bloc 4, expériences à faire soi-même
+│   ├── notebooks/                               # 3 notebooks pédagogiques, exécutés
+│   └── figures/                                 # 7 figures SVG
+└── 05_mini_projet_eco2mix/
+    ├── README.md                                # démarche, hypothèses testées, résultats, recommandation
+    ├── TUTORIEL.md                              # relancer le bloc 5, expériences, dépannage
+    ├── reconciliation_eco2mix.ipynb             # Definition of Done, de bout en bout
+    ├── notebooks/                               # 4 notebooks pédagogiques, exécutés
+    └── figures/                                 # figures SVG + figure clé PNG
+
+data/ (non versionné)                            # données éCO2mix et résultats du backtest, régénérables
 ```
 
 Les **dossiers numérotés** contiennent la documentation et les notebooks de chaque bloc. Le **code** vit dans un
@@ -69,9 +81,10 @@ bloc 3.
 | 2 | Ingénierie & code | MinT(shrink) de zéro : 3 assertions vertes, écart à la bibliothèque **1,07e-5** (< 1e-3) ; 4 notebooks | ✅ |
 | 3 | System design | Architecture + `reconciliation.yaml` v3 + job et gate exécutables et testés | ✅ |
 | 4 | Fondamentaux | Biais propagé (seuil ≈ 4,5), quantiles A/B/C (B : **0,764** au lieu de 0,900), bootstrap joint, Gauss-Markov ; 3 notebooks | ✅ |
-| 5–6 | Mini-projet éCO2mix, BayesReconPy | — | à faire |
+| 5 | Mini-projet éCO2mix | 12 régions → France, 4 + 119 origines ; cohérence exacte ; BU meilleur, MinT shrink **+2,3 %** (W in-sample fausse, démontré) ; 5 notebooks | ✅ |
+| 6 | BayesReconPy | — | à faire |
 
-## Ce qu'il faut retenir des blocs 1 à 4
+## Ce qu'il faut retenir des blocs 1 à 5
 
 1. **L'écart à `HierarchicalForecast` ne vient pas de λ, contrairement à ce que dit le plan.** Les deux λ sont égaux
    à 2e-5 près. Environ 99,8 % de l'écart vient de la covariance de base : la bibliothèque centre les résidus et
@@ -94,3 +107,14 @@ bloc 3.
 7. **Le λ de Schäfer–Strimmer naïf ne passe pas à l'échelle.** Le tenseur `T × m × m` pèse 31 Go à m = 5 000.
    La version actuelle passe par la Gram `T × T` : 0,6 Go, pour un résultat identique à 1e-10 près
    (`mint/shrinkage.py`).
+8. **Sur des données réelles, le bottom-up peut battre MinT.** Sur 119 origines de 2024 (éCO2mix, 12 régions),
+   MinT shrink augmente le MASE régional de 2,3 % par rapport au bottom-up, et fait moins bien sur les 13 séries.
+   Les 4 origines du protocole principal donnaient le résultat inverse
+   ([bloc 5, notebook 04](05_mini_projet_eco2mix/notebooks/04_robustesse_et_tests.ipynb)).
+9. **La cause est une hypothèse cachée de `mint_shrink`** : W est estimée sur des résidus in-sample. Ceux de MSTL
+   sont des restes de lissage, corrélés à 0,11 entre régions, alors que les vraies erreurs le sont à 0,56. Avec W
+   estimée sur les erreurs passées, MinT revient au niveau du bottom-up
+   ([notebook 02](05_mini_projet_eco2mix/notebooks/02_modeles_de_base_et_hypotheses.ipynb)).
+10. **Vérifier les données avant de prévoir.** La source éCO2mix a un défaut de changement d'heure chaque année
+    (doublons en mars, heure manquante en octobre), et la Nouvelle-Aquitaine s'arrête fin 2024
+    ([notebook 01](05_mini_projet_eco2mix/notebooks/01_donnees_et_hierarchie.ipynb)).

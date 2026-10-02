@@ -1,4 +1,5 @@
-"""Point d'entrée : `w37 mint` (bloc 2), `w37 job` (bloc 3), `w37 biais` et `w37 quantiles` (bloc 4)."""
+"""Point d'entrée : `w37 mint` (bloc 2), `w37 job` (bloc 3), `w37 biais` et `w37 quantiles` (bloc 4),
+`w37 eco2mix` (bloc 5)."""
 from __future__ import annotations
 
 import argparse
@@ -76,6 +77,37 @@ def _cmd_quantiles(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_eco2mix(args: argparse.Namespace) -> int:
+    from .eco2mix import metrics, run
+
+    cfg, paths = run.load_config(args.config or run.DEFAULT_CONFIG)
+    if args.action == "download":
+        run.download(cfg, paths, force=args.force)
+    elif args.action == "prepare":
+        run.run_prepare(cfg, paths)
+    elif args.action == "backtest":
+        run.run_backtest_stage(cfg, paths, args.which)
+    elif args.action == "report":
+        hier = run.load_hierarchy(cfg, paths)
+        res = run.load_results(paths, args.which)
+        fc = res["forecasts"]
+        reconciled = [c for c in metrics.methods_in(fc) if c not in ("base", "SN")]
+        tol = float(cfg["inference"]["coherence_tol_abs"])
+        inc = metrics.assert_coherent(fc, hier, reconciled, tol)
+        by_level = metrics.mase_by_level(metrics.mase_long(fc, res["scales"], hier))
+        order = ["SN", "base", *reconciled]
+        print(f"MASE par niveau ({args.which}, {fc['origin'].nunique()} origines) : moyenne et écart-type\n")
+        print(metrics.summary_table(by_level, order).round(3).to_string())
+        print(f"\nIncohérence max (MW) après réconciliation : {inc.to_numpy().max():.2e}   [OK] < {tol:g}")
+        base_gap = metrics.incoherence(fc, hier, "base").max()
+        print(f"Incohérence max (MW) des prévisions de base MSTL : {base_gap:.1f}")
+        k = metrics.key_figure(by_level)
+        for level, v in k.items():
+            print(f"MinT shrink vs BU, {level:7s} : {v['mean']:+.2%} ± {v['std']:.2%} "
+                  f"(meilleur à {v['wins']}/{v['n_origins']} origines)")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="w37", description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -99,6 +131,14 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("quantiles", help="bloc 4 : MinT réconcilie des moyennes, pas des quantiles")
     p.add_argument("--rho", type=float, default=0.6, help="corrélation entre régions")
     p.set_defaults(func=_cmd_quantiles)
+
+    p = sub.add_parser("eco2mix", help="bloc 5 : mini-projet éCO2mix (télécharger, préparer, backtester)")
+    p.add_argument("action", choices=["download", "prepare", "backtest", "report"])
+    p.add_argument("--which", choices=["main", "robustness"], default="main",
+                   help="protocole principal (4 origines) ou étude de robustesse (2024 entière)")
+    p.add_argument("--config", type=Path, default=None, help="défaut : configs/eco2mix.yaml")
+    p.add_argument("--force", action="store_true", help="retélécharger même si le fichier est présent")
+    p.set_defaults(func=_cmd_eco2mix)
 
     args = parser.parse_args(argv)
     return args.func(args)

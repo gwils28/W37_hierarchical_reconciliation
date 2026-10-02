@@ -1,0 +1,37 @@
+# eco2mix.yaml -- protocole du bloc 5, fixé AVANT de regarder le moindre résultat.
+# Toute modification après coup doit être justifiée dans 05_mini_projet_eco2mix/README.md (§ « Écarts au protocole »).
+
+source:
+  api: https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets
+  regional: eco2mix-regional-cons-def     # 12 régions, pas de 30 min
+  national: eco2mix-national-cons-def     # total France officiel + prévision J-1 de RTE (repère externe)
+  nature: "Données définitives"           # les données « consolidées » (2025+) n'ont plus que 11 régions
+  start: "2013-01-01"
+  end: "2025-01-01"                       # exclu ; la Nouvelle-Aquitaine s'arrête au 31/12/2024
+  attribution: "Open Data Réseaux Énergies (ODRÉ) — RTE, Licence Ouverte v2.0"
+
+data_dir: data/eco2mix                    # non versionné ; un manifeste garde URL + sha256
+
+prepare:
+  freq: 1h                                # 30 min -> 1 h par MOYENNE (des MW restent des MW)
+  timezone: UTC                           # pas de jour de 23 h ni de 25 h
+  total_name: France                      # agrégat construit comme somme des 12 régions
+  additivity_tol_mw: 6                    # 12 régions arrondies au MW : |écart| ≤ 12 × 0,5
+
+backtest:
+  h: 24                                   # prévision du jour J, faite à J 00:00 UTC
+  season: 168                             # 1 semaine : saisonnalité de SeasonalNaive et du MASE
+  train_weeks: 52                         # fenêtre glissante des modèles de base, strictement antérieure
+  # Protocole principal (Definition of Done du plan) : 4 origines espacées de 7 jours.
+  # 4 mardis de novembre 2024 : hors jours fériés et vacances scolaires, que les modèles ne connaissent pas.
+  main_origins: ["2024-11-05", "2024-11-12", "2024-11-19", "2024-11-26"]
+  # Étude de robustesse : toute l'année 2024, une origine tous les 3 jours (tous les jours de la semaine).
+  robustness: {start: "2024-01-09", end: "2024-12-30", every_days: 3}
+  models: [SeasonalNaive, MSTL]
+  reconcile_model: MSTL                   # SeasonalNaive est déjà cohérent (cf. README) : on réconcilie MSTL
+  methods: [BottomUp, ols, wls_struct, wls_var, mint_shrink]
+
+inference:
+  alpha: 0.05
+  multiple_testing: holm                  # 12 régions testées : correction des p-valeurs
+  coherence_tol_abs: 1.0e-6               # assertion de la Definition of Done

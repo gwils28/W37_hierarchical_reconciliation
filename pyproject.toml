@@ -1,7 +1,7 @@
 [project]
 name = "w37-reconciliation"
-version = "0.2.0"
-description = "W37 — réconciliation hiérarchique : MinT(shrink) de zéro et job de réconciliation avec quality gate."
+version = "0.3.0"
+description = "W37 — réconciliation hiérarchique : MinT(shrink) de zéro, job avec quality gate, mini-projet éCO2mix."
 readme = "README.md"
 authors = [{ name = "wilson goma" }]
 requires-python = ">=3.12,<3.13"
@@ -13,6 +13,11 @@ dependencies = [
     "pandas>=2.2,<3",
     "pyyaml>=6.0",
     "matplotlib>=3.9",
+    # bloc 5 : téléchargement, stockage parquet, tests d'hypothèses
+    "requests>=2.31",
+    "pyarrow>=15",
+    "scipy>=1.11",
+    "statsmodels>=0.14",
 ]
 
 [project.scripts]
