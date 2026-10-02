@@ -7,3 +7,6 @@ __pycache__/
 
 # artefacts produits par `w37 job` (horodatés, régénérables)
 03_system_design/outputs/
+
+# instructions locales pour Claude Code, non versionnées
+CLAUDE.md

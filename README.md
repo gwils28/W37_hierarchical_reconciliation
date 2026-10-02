@@ -69,7 +69,7 @@ bloc 3.
 | 2 | Ingénierie & code | MinT(shrink) de zéro : 3 assertions vertes, écart à la bibliothèque **1,07e-5** (< 1e-3) ; 4 notebooks | ✅ |
 | 3 | System design | Architecture + `reconciliation.yaml` v3 + job et gate exécutables et testés | ✅ |
 | 4 | Fondamentaux | Biais propagé (seuil ≈ 4,5), quantiles A/B/C (B : **0,764** au lieu de 0,900), bootstrap joint, Gauss-Markov ; 3 notebooks | ✅ |
-| 5–8 | Mini-projet éCO2mix, Chronos-2, BayesReconPy, article | — | à faire |
+| 5–6 | Mini-projet éCO2mix, BayesReconPy | — | à faire |
 
 ## Ce qu'il faut retenir des blocs 1 à 4
 
