@@ -1,0 +1,35 @@
+# reconciliation.yaml -- contrat du job, versionne avec le modele
+# Repris du plan W37 (bloc 3). Ajouts marques "# [ajout]" : ils rendent explicites des regles que
+# le plan ne laissait qu'en commentaire, pour qu'elles soient executables (cf. reconciliation_job.py).
+job: forecast_reconciliation
+version: 3
+hierarchy:
+  spec: [[region], [region, canal], [region, canal, famille]]
+  source: dim_produit@v7          # versionnee : tout changement = nouveau run_id
+  hash_check: true                # refuse le run si S a change sans bump de version
+  hash_registry: s_hash_registry.json   # [ajout] source@version -> sha256(S + libelles)
+base_forecasts:
+  input: forecast_base
+  require_fitted_residuals: true  # sans residus in-sample, pas de mint_shrink
+reconciler:
+  method: mint_shrink
+  fallback: wls_struct            # si W mal conditionnee (m > T) ou non inversible
+  fallback_when:                  # [ajout] criteres chiffres du repli
+    residuals_fewer_than_series: false  # m > T est TOLERE : c'est le role du shrinkage (cf. bloc 2)
+    max_condition_number: 1.0e+10       # cond(W_shrink) au-dela -> wls_struct
+    min_residuals: 24                   # en-dessous, lambda n'a aucun sens statistique
+  covariance_window: 104          # semaines de residus, glissante, STRICTEMENT anterieure
+  online_update: false            # cf. option D (README)
+quality_gate:
+  coherence_tol_abs: 1e-6
+  coherence_tol_rel: 1e-9         # [ajout] relatif au niveau agrege : 1e-6 absolu n'a pas le meme sens sur 10 MW et sur 50 GW
+  max_negative_share: 0.001       # MinT peut produire des ventes negatives
+  compare_to_baseline: bottom_up  # echec si degradation MASE > 2 % a UN niveau quelconque
+  max_mase_degradation: 0.02      # [ajout] le "2 %" du commentaire, rendu executable
+  level_weights: {feuille: 0.7, famille: 0.2, national: 0.1}   # cf. bloc 4
+  fail_action: block_publish
+outputs:
+  table: forecast_reconciled
+  partition_by: [run_id, forecast_date]
+  immutable: true
+  lineage: [run_id, s_hash, w_version, method_used, lib_versions]   # [ajout] ce qu'il faut pour rejouer un chiffre

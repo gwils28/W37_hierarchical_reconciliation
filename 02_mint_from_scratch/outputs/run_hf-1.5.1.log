@@ -1,0 +1,13 @@
+series (m) = 6, feuilles (nb) = 4, residus (T) = 72
+ordre      : ['Bretagne', 'PaysLoire', 'Bretagne/GMS', 'Bretagne/RHD', 'PaysLoire/GMS', 'PaysLoire/RHD']
+lambda SS  : 0.113325
+P^2 == P   : 2.220e-16
+SGS == S   : 2.220e-16
+incoherence: 5.684e-14
+ecart rel. : 1.074e-05   (abs. 1.772e-03 sur des valeurs ~165)
+OK : 3 assertions vertes
+decomposition de l'ecart absolu a la lib :
+  base E'E/T   + lambda non centre (0.113325) : 1.772e-03
+  base np.cov  + lambda non centre (0.113325) : 3.263e-06
+  base np.cov  + lambda centre     (0.116517) : 4.544e-04
+m > T : T'=4, rang(W1)=4/6, cond(W1)=1.7e+17 -> lambda=0.907, cond(W_shrink)=1.0e+01
