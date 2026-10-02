@@ -26,9 +26,12 @@ w37 = "w37_reconciliation.cli:main"
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.6"]
 notebooks = ["jupyterlab>=4", "ipykernel>=6", "nbclient>=0.10", "nbformat>=5"]
+# bloc 6 : réconciliation probabiliste par conditionnement (tire jax, scikit-learn, PuLP)
+# pulp<4 : PuLP 4.0.0 (25/09/2026) ne fournit plus PULP_CBC_CMD, que bayesreconpy 0.5.0 importe
+bayesrecon = ["bayesreconpy==0.5.0", "pulp>=2.9,<4"]
 
 [tool.uv]
-default-groups = ["dev", "notebooks"]
+default-groups = ["dev", "notebooks", "bayesrecon"]
 
 [build-system]
 requires = ["hatchling"]

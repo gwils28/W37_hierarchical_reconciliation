@@ -1,25 +1,27 @@
 # W37 — « Cohérent ne veut pas dire calibré »
 
 Veille hebdomadaire, semaine ISO 2026-W37 : la réconciliation hiérarchique, de MinT ponctuel au probabiliste.
-Le plan complet est dans [`W37.md`](W37.md). Ce dépôt couvre pour l'instant les **blocs 1 à 5**.
+Le plan complet est dans [`W37.md`](W37.md). Ce dépôt couvre les **6 blocs** du plan.
 
 ## Démarrage rapide
 
 ```bash
 uv sync                  # Python 3.12 + dépendances verrouillées (uv.lock)
-uv run pytest            # 75 tests
+uv run pytest            # 88 tests
 uv run w37 mint          # bloc 2 : MinT(shrink) maison vs HierarchicalForecast
 uv run w37 job           # bloc 3 : un run du job de réconciliation avec quality gate
 uv run w37 biais         # bloc 4 : MinT propage le biais d'une seule prévision de base
 uv run w37 quantiles     # bloc 4 : MinT réconcilie des moyennes, pas des quantiles
 make eco2mix             # bloc 5 : données éCO2mix (téléchargées), backtest, rapport
+uv run w37 bayesrecon run  # bloc 6 : MinT face à BayesReconPy sur des ventes intermittentes (M5)
 uv run jupyter lab
 ```
 
 Les mêmes commandes existent en raccourci `make` : `make install | test | test-fast | lint | mint | job | biais | quantiles | eco2mix | eco2mix-robustness |
-notebooks | lab`.
+bayesrecon | notebooks | lab`.
 Tutoriels pas à pas : [bloc 2](02_mint_from_scratch/TUTORIEL.md) · [bloc 3](03_system_design/TUTORIEL.md) ·
-[bloc 4](04_fondamentaux/TUTORIEL.md) · [bloc 5](05_mini_projet_eco2mix/TUTORIEL.md).
+[bloc 4](04_fondamentaux/TUTORIEL.md) · [bloc 5](05_mini_projet_eco2mix/TUTORIEL.md) ·
+[bloc 6](06_bayesreconpy/TUTORIEL.md).
 
 ## Organisation
 
@@ -29,7 +31,8 @@ Tutoriels pas à pas : [bloc 2](02_mint_from_scratch/TUTORIEL.md) · [bloc 3](03
 ├── Makefile                                     # raccourcis
 ├── configs/
 │   ├── reconciliation.yaml                      # contrat du job (bloc 3)
-│   └── eco2mix.yaml                             # protocole du mini-projet, fixé avant les résultats (bloc 5)
+│   ├── eco2mix.yaml                             # protocole du mini-projet, fixé avant les résultats (bloc 5)
+│   └── bayesrecon.yaml                          # protocole du bloc 6 (source figée, tirages, seuil de la gate)
 ├── src/w37_reconciliation/                      # le package
 │   ├── data.py                                  # hiérarchie synthétique, découpage, format large
 │   ├── forecasting.py                           # prévisions de base + résidus in-sample
@@ -37,10 +40,12 @@ Tutoriels pas à pas : [bloc 2](02_mint_from_scratch/TUTORIEL.md) · [bloc 3](03
 │   ├── pipeline/                                # bloc 3 : contrat, hash de S, choix de méthode, gate, job
 │   ├── fundamentals/                            # bloc 4 : biais, quantiles A/B/C, bootstrap, diagnostics
 │   ├── eco2mix/                                 # bloc 5 : source, préparation, backtest, métriques, tests
+│   ├── bayesrecon/                              # bloc 6 : exemple M5, 4 réconciliations, scores, exemple exact
+│   ├── download.py                              # téléchargement avec manifeste sha256 (blocs 5 et 6)
 │   ├── viz.py                                   # style des graphiques
 │   └── cli.py                                   # commande `w37`
 ├── tests/
-│   ├── unit/                                    # 64 tests rapides, sans entraînement de modèle
+│   ├── unit/                                    # 77 tests rapides, sans entraînement de modèle
 │   └── integration/                             # 11 tests de bout en bout (marqueur `slow`)
 ├── 01_veille/
 │   ├── README.md                                # ressources vérifiées, synthèse, « ce qui est surcoté »
@@ -58,14 +63,19 @@ Tutoriels pas à pas : [bloc 2](02_mint_from_scratch/TUTORIEL.md) · [bloc 3](03
 │   ├── TUTORIEL.md                              # relancer le bloc 4, expériences à faire soi-même
 │   ├── notebooks/                               # 3 notebooks pédagogiques, exécutés
 │   └── figures/                                 # 7 figures SVG
-└── 05_mini_projet_eco2mix/
-    ├── README.md                                # démarche, hypothèses testées, résultats, recommandation
-    ├── TUTORIEL.md                              # relancer le bloc 5, expériences, dépannage
-    ├── reconciliation_eco2mix.ipynb             # Definition of Done, de bout en bout
-    ├── notebooks/                               # 4 notebooks pédagogiques, exécutés
-    └── figures/                                 # figures SVG + figure clé PNG
+├── 05_mini_projet_eco2mix/
+│   ├── README.md                                # démarche, hypothèses testées, résultats, recommandation
+│   ├── TUTORIEL.md                              # relancer le bloc 5, expériences, dépannage
+│   ├── reconciliation_eco2mix.ipynb             # Definition of Done, de bout en bout
+│   ├── notebooks/                               # 4 notebooks pédagogiques, exécutés
+│   └── figures/                                 # figures SVG + figure clé PNG
+└── 06_bayesreconpy/
+    ├── README.md                                # vérification du paquet, réponse chiffrée, validation, recommandation
+    ├── TUTORIEL.md                              # installer (pulp<4), utiliser, pièges, tests
+    ├── notebooks/                               # 2 notebooks pédagogiques, exécutés
+    └── figures/                                 # 6 figures SVG
 
-data/ (non versionné)                            # données éCO2mix et résultats du backtest, régénérables
+data/ (non versionné)                            # données éCO2mix, exemple M5, résultats ; régénérables
 ```
 
 Les **dossiers numérotés** contiennent la documentation et les notebooks de chaque bloc. Le **code** vit dans un
@@ -82,9 +92,9 @@ bloc 3.
 | 3 | System design | Architecture + `reconciliation.yaml` v3 + job et gate exécutables et testés | ✅ |
 | 4 | Fondamentaux | Biais propagé (seuil ≈ 4,5), quantiles A/B/C (B : **0,764** au lieu de 0,900), bootstrap joint, Gauss-Markov ; 3 notebooks | ✅ |
 | 5 | Mini-projet éCO2mix | 12 régions → France, 4 + 119 origines ; cohérence exacte ; BU meilleur, MinT shrink **+2,3 %** (W in-sample fausse, démontré) ; 5 notebooks | ✅ |
-| 6 | BayesReconPy | — | à faire |
+| 6 | BayesReconPy | MinT gaussien : **11 moyennes et 98 % des bornes basses négatives** sur M5 ; conditionnement : 0 ; TD-cond le plus précis ; vignette R reproduite ; 2 notebooks | ✅ |
 
-## Ce qu'il faut retenir des blocs 1 à 5
+## Ce qu'il faut retenir
 
 1. **L'écart à `HierarchicalForecast` ne vient pas de λ, contrairement à ce que dit le plan.** Les deux λ sont égaux
    à 2e-5 près. Environ 99,8 % de l'écart vient de la covariance de base : la bibliothèque centre les résidus et
@@ -118,3 +128,10 @@ bloc 3.
 10. **Vérifier les données avant de prévoir.** La source éCO2mix a un défaut de changement d'heure chaque année
     (doublons en mars, heure manquante en octobre), et la Nouvelle-Aquitaine s'arrête fin 2024
     ([notebook 01](05_mini_projet_eco2mix/notebooks/01_donnees_et_hierarchie.ipynb)).
+11. **Sur des comptages intermittents, MinT produit des ventes impossibles.** Sur le magasin M5 CA_1 (3 049
+    articles), le MinT gaussien donne 11 moyennes négatives et des intervalles à 90 % qui commencent sous zéro pour
+    98 % des articles. Le conditionnement de BayesReconPy (TD-cond) n'en produit aucun, et il est le plus précis
+    ([bloc 6, notebook 02](06_bayesreconpy/notebooks/02_m5_negatifs_et_precision.ipynb)).
+12. **Vérifier un paquet avant de le recommander.** BayesReconPy 0.5.0 ne s'installe plus tel quel (PuLP 4), a une
+    licence contradictoire (MIT dans les métadonnées, LGPL-3.0 dans le dépôt) et modifie ses entrées en place
+    ([bloc 6](06_bayesreconpy/README.md)).

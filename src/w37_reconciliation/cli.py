@@ -1,5 +1,5 @@
 """Point d'entrée : `w37 mint` (bloc 2), `w37 job` (bloc 3), `w37 biais` et `w37 quantiles` (bloc 4),
-`w37 eco2mix` (bloc 5)."""
+`w37 eco2mix` (bloc 5), `w37 bayesrecon` (bloc 6)."""
 from __future__ import annotations
 
 import argparse
@@ -108,6 +108,31 @@ def _cmd_eco2mix(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_bayesrecon(args: argparse.Namespace) -> int:
+    import pandas as pd
+
+    from .bayesrecon import example, methods, scores
+
+    cfg, raw = example.load_config(args.config or example.DEFAULT_CONFIG)
+    example.download(cfg, raw, force=args.force)
+    if args.action == "download":
+        return 0
+    ex = example.load_m5(raw)
+    rc, alpha = cfg["reconciliation"], 1 - cfg["reconciliation"]["interval"]
+    recs = methods.run_all(ex, rc["num_samples"], rc["seed"])
+    table = scores.summary(recs, ex, alpha)
+    pd.set_option("display.width", 200)
+    print(f"M5, magasin CA_1 : {ex.A.shape[0]} agrégats, {ex.A.shape[1]} articles, prévision à 1 jour\n")
+    print(table.T.round(4).to_string())
+    print("\nSkill scores (%) par rapport à la base (positif = mieux) :\n")
+    print(scores.skill_table(recs, ex, alpha).round(2).to_string())
+    limit = float(cfg["gate"]["max_negative_share"])
+    print(f"\nQuality gate du bloc 3 (max_negative_share = {limit:g}, sur les moyennes des articles) :")
+    for name, share in table["articles · part moyennes < 0"].items():
+        print(f"  {name:14s} {share:.4f}  {'[OK]' if share <= limit else '[BLOQUÉ]'}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="w37", description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -139,6 +164,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--config", type=Path, default=None, help="défaut : configs/eco2mix.yaml")
     p.add_argument("--force", action="store_true", help="retélécharger même si le fichier est présent")
     p.set_defaults(func=_cmd_eco2mix)
+
+    p = sub.add_parser("bayesrecon", help="bloc 6 : MinT face au conditionnement (BayesReconPy), exemple M5")
+    p.add_argument("action", choices=["download", "run"])
+    p.add_argument("--config", type=Path, default=None, help="défaut : configs/bayesrecon.yaml")
+    p.add_argument("--force", action="store_true", help="retélécharger même si le fichier est présent")
+    p.set_defaults(func=_cmd_bayesrecon)
 
     args = parser.parse_args(argv)
     return args.func(args)

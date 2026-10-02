@@ -1,0 +1,20 @@
+# bayesrecon.yaml -- protocole du bloc 6 : MinT face à la réconciliation par conditionnement (BayesReconPy).
+
+source:
+  # données d'exemple du dépôt BayesReconPy, figées au commit du tag v0.5.0 (même version que le paquet)
+  base_url: https://raw.githubusercontent.com/supsi-dacd-isaac/BayesReconPy
+  commit: 79cd56febf2bc3e0b21d4f2e705972e04a8723aa
+  files: [M5_CA1_basefc.pkl]
+  attribution: >-
+    Prévisions de base ADAM du magasin CA_1 de la compétition M5 (Makridakis et al., 2022), distribuées avec
+    bayesRecon / BayesReconPy (Biswas et al., 2025, JOSS 10(111) 8336). Non redistribuées dans ce dépôt.
+
+data_dir: data/bayesrecon                 # non versionné ; un manifeste garde URL + sha256
+
+reconciliation:
+  num_samples: 10000                      # tirages pour TD-cond, MixCond et le bottom-up probabiliste
+  seed: 37
+  interval: 0.90                          # intervalles de prévision (score MIS)
+
+gate:
+  max_negative_share: 0.001               # le seuil du contrat du bloc 3 (configs/reconciliation.yaml)

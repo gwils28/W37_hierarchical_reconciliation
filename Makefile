@@ -1,4 +1,4 @@
-.PHONY: install test test-fast lint mint job biais quantiles eco2mix eco2mix-robustness notebooks lab clean
+.PHONY: install test test-fast lint mint job biais quantiles eco2mix eco2mix-robustness bayesrecon notebooks lab clean
 
 install:        ## crée .venv et installe le projet + groupes dev/notebooks (uv.lock)
 	uv sync
@@ -34,13 +34,17 @@ eco2mix-robustness:  ## bloc 5 : étude de robustesse, 119 origines de 2024 (≈
 	uv run w37 eco2mix backtest --which robustness
 	uv run w37 eco2mix report --which robustness
 
-notebooks:      ## ré-exécute les notebooks des blocs 2, 4 et 5 et enregistre leurs sorties
+bayesrecon:     ## bloc 6 : MinT face à BayesReconPy sur M5 (télécharge l'exemple la 1re fois)
+	uv run w37 bayesrecon run
+
+notebooks:      ## ré-exécute les notebooks des blocs 2, 4, 5 et 6 et enregistre leurs sorties
 	for nb in 02_mint_from_scratch/notebooks/*.ipynb 04_fondamentaux/notebooks/*.ipynb \
-	          05_mini_projet_eco2mix/notebooks/*.ipynb 05_mini_projet_eco2mix/reconciliation_eco2mix.ipynb; do \
+	          05_mini_projet_eco2mix/notebooks/*.ipynb 05_mini_projet_eco2mix/reconciliation_eco2mix.ipynb \
+	          06_bayesreconpy/notebooks/*.ipynb; do \
 		uv run jupyter nbconvert --to notebook --execute --inplace "$$nb"; \
 	done
 
-lab:            ## ouvre JupyterLab à la racine (notebooks des blocs 2, 4 et 5)
+lab:            ## ouvre JupyterLab à la racine (notebooks des blocs 2, 4, 5 et 6)
 	uv run jupyter lab
 
 clean:
