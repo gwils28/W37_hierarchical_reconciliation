@@ -1,0 +1,37 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760 520' width='760' height='520' font-family='Inter, Helvetica, Arial, sans-serif' role='img' aria-label='Chaque travail de 2026 attaque un angle mort de MinT'>
+<rect width='760' height='520' fill='white'/>
+<defs><marker id='a' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M0 0L10 5L0 10z' fill='#a9a69e'/></marker></defs>
+<text x='24' y='34' font-size='15' font-weight='600' fill='#1f1f1f' text-anchor='start'>Chaque travail de 2026 attaque un angle mort de MinT</text>
+<text x='24' y='54' font-size='11.5' font-weight='400' fill='#5f5f5f' text-anchor='start'>Carte des articles de la veille W37, autour de la méthode de référence</text>
+<rect x='24' y='72' width='712' height='48' rx='8' fill='#2f7de1' fill-opacity='0.12' stroke='#2f7de1' stroke-width='2'/>
+<text x='380' y='100' font-size='13' font-weight='600' fill='#1f1f1f' text-anchor='middle'>MinT (2019) : moindres carrés généralisés, cohérence exacte</text>
+<path d='M380 120V150' fill='none' stroke='#a9a69e' stroke-width='1.25' marker-end='url(#a)'/>
+<rect x='24' y='152' width='712' height='280' rx='8' fill='none' stroke='#dcdad4' stroke-width='1.25'/>
+<text x='40' y='178' font-size='13' font-weight='600' fill='#5f5f5f' text-anchor='start'>Ses quatre angles morts, et les travaux qui s’y attaquent</text>
+<rect x='40' y='192' width='332' height='104' rx='8' fill='white' stroke='#a9a69e' stroke-width='1.25'/>
+<text x='52' y='216' font-size='13' font-weight='600' fill='#1f1f1f' text-anchor='start'>1. Biais et niveau de décision</text>
+<text x='52' y='232' font-size='11.5' font-weight='400' fill='#5f5f5f' text-anchor='start'>Un biais de base contamine toutes les séries ;</text>
+<text x='52' y='248' font-size='11.5' font-weight='400' fill='#5f5f5f' text-anchor='start'>MinT traite tous les niveaux de la même façon.</text>
+<text x='52' y='264' font-size='11.5' font-weight='400' fill='#1f1f1f' text-anchor='start'>» Nugteren et al. (2606.23009) : bayésien</text>
+<text x='52' y='280' font-size='11.5' font-weight='400' fill='#1f1f1f' text-anchor='start'>hiérarchique, cohérence souple, niveau ciblé</text>
+<rect x='388' y='192' width='332' height='104' rx='8' fill='white' stroke='#a9a69e' stroke-width='1.25'/>
+<text x='400' y='216' font-size='13' font-weight='600' fill='#1f1f1f' text-anchor='start'>2. Probabiliste</text>
+<text x='400' y='232' font-size='11.5' font-weight='400' fill='#5f5f5f' text-anchor='start'>MinT réconcilie des moyennes, pas des quantiles.</text>
+<text x='400' y='248' font-size='11.5' font-weight='400' fill='#5f5f5f' text-anchor='start'>La dépendance entre séries est indispensable.</text>
+<text x='400' y='264' font-size='11.5' font-weight='400' fill='#1f1f1f' text-anchor='start'>» Panagiotelis et al. (EJOR 2023) : projeter</text>
+<text x='400' y='280' font-size='11.5' font-weight='400' fill='#1f1f1f' text-anchor='start'>des échantillons joints, energy score</text>
+<rect x='40' y='312' width='332' height='104' rx='8' fill='white' stroke='#a9a69e' stroke-width='1.25'/>
+<text x='52' y='336' font-size='13' font-weight='600' fill='#1f1f1f' text-anchor='start'>3. Échelle et fraîcheur</text>
+<text x='52' y='352' font-size='11.5' font-weight='400' fill='#5f5f5f' text-anchor='start'>W fait m × m : infaisable à très grande échelle,</text>
+<text x='52' y='368' font-size='11.5' font-weight='400' fill='#5f5f5f' text-anchor='start'>et la réestimer à chaque run coûte cher.</text>
+<text x='52' y='384' font-size='11.5' font-weight='400' fill='#1f1f1f' text-anchor='start'>» Wang et al. (2602.05030) : 4 Md de valeurs</text>
+<text x='52' y='400' font-size='11.5' font-weight='400' fill='#1f1f1f' text-anchor='start'>» Rønlev-Knudsen et al. (2606.23326) : en ligne</text>
+<rect x='388' y='312' width='332' height='104' rx='8' fill='white' stroke='#a9a69e' stroke-width='1.25'/>
+<text x='400' y='336' font-size='13' font-weight='600' fill='#1f1f1f' text-anchor='start'>4. Non-linéaire</text>
+<text x='400' y='352' font-size='11.5' font-weight='400' fill='#5f5f5f' text-anchor='start'>Log, ratios, prix moyens : y = S b ne tient plus,</text>
+<text x='400' y='368' font-size='11.5' font-weight='400' fill='#5f5f5f' text-anchor='start'>et MinT perd son fondement.</text>
+<text x='400' y='384' font-size='11.5' font-weight='400' fill='#1f1f1f' text-anchor='start'>» Biswas et al. (2604.26668) : surface</text>
+<text x='400' y='400' font-size='11.5' font-weight='400' fill='#1f1f1f' text-anchor='start'>cohérente non linéaire, conditionnement UKF</text>
+<rect x='24' y='448' width='712' height='48' rx='8' fill='#efeeeb' stroke='#a9a69e' stroke-width='1.25'/>
+<text x='380' y='476' font-size='13' font-weight='400' fill='#1f1f1f' text-anchor='middle'>Socle : MinT = combinaison optimale de prévisions (Li et al., 2608.13886)</text>
+</svg>

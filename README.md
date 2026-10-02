@@ -38,7 +38,10 @@ Tutoriels pas à pas : [bloc 2](02_mint_from_scratch/TUTORIEL.md) · [bloc 3](03
 ├── tests/
 │   ├── unit/                                    # 46 tests rapides, sans entraînement de modèle
 │   └── integration/                             # 7 tests de bout en bout (marqueur `slow`)
-├── 01_veille/README.md                          # ressources vérifiées, synthèse, « ce qui est surcoté »
+├── 01_veille/
+│   ├── README.md                                # ressources vérifiées, synthèse, « ce qui est surcoté »
+│   ├── GUIDE_RECONCILIATION.md                  # guide d'introduction : MinT et lecture des articles
+│   └── figures/                                 # 2 schémas SVG du guide
 ├── 02_mint_from_scratch/
 │   ├── README.md                                # résultats et analyse
 │   ├── TUTORIEL.md                              # relancer le bloc 2

@@ -3,6 +3,9 @@
 > Thème W37 : *« Cohérent ne veut pas dire calibré »* — réconciliation hiérarchique, de MinT ponctuel au probabiliste.
 > Budget : 20 min · Vérification des ressources réalisée le **2026-10-02** (le plan les annonçait vérifiées au 06/09/2026).
 
+> 📘 **Nouveau sur le sujet ?** Commencez par le [guide d'introduction](GUIDE_RECONCILIATION.md) : le problème,
+> MinT expliqué pas à pas, puis chaque article de cette veille résumé et mis en perspective.
+
 ## 1. Ce qui a été fait
 
 1. Chaque lien du plan a été ouvert (pages arXiv `abs`, page publication de R. Hyndman, PyPI, GitHub).
