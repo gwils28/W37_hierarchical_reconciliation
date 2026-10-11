@@ -1,4 +1,4 @@
-# Tutoriel — relancer le bloc 2 (MinT(shrink) de zéro)
+# Tutoriel : relancer le bloc 2 (MinT(shrink) de zéro)
 
 Ce tutoriel part d'une machine vierge et va jusqu'aux quatre notebooks exécutés. Comptez environ 5 minutes, dont
 la majeure partie pour l'installation.
@@ -7,9 +7,9 @@ la majeure partie pour l'installation.
 
 | Outil | Version | Vérifier |
 |---|---|---|
-| Linux / macOS (ou WSL) | — | — |
+| Linux / macOS (ou WSL) | - | - |
 | [uv](https://docs.astral.sh/uv/) | ≥ 0.5 | `uv --version` |
-| git | — | `git --version` |
+| git | - | `git --version` |
 
 Python n'a **pas** besoin d'être installé : uv télécharge le Python 3.12 indiqué dans `.python-version`.
 

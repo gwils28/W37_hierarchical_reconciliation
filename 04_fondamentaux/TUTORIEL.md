@@ -1,4 +1,4 @@
-# Tutoriel — relancer le bloc 4 (fondamentaux)
+# Tutoriel : relancer le bloc 4 (fondamentaux)
 
 Ce tutoriel suppose le dépôt installé (`uv sync`, voir le [tutoriel du bloc 2](../02_mint_from_scratch/TUTORIEL.md)
 § 0–1). Comptez environ 10 minutes pour tout relancer et lire les sorties.
@@ -72,7 +72,7 @@ Les notebooks sont versionnés **avec leurs sorties**. Ils exportent leurs figur
 make notebooks            # ré-exécute les notebooks des blocs 2 et 4
 ```
 
-> **Point d'attention — mémoire.** La cellule « mur numérique » du notebook 03 estime une covariance pour
+> **Point d'attention : mémoire.** La cellule « mur numérique » du notebook 03 estime une covariance pour
 > m = 5 000 séries. Elle demande environ 0,6 Go et 25 s. Une ancienne version du calcul de λ allouait un tenseur
 > de 31 Go, qui faisait tuer le noyau par l'OOM killer. Pour vous protéger d'une régression, vous pouvez plafonner
 > la mémoire du noyau : une allocation excessive lève alors une `MemoryError` lisible au lieu d'un kill silencieux.

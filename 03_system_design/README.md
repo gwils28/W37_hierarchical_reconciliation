@@ -1,4 +1,4 @@
-# Bloc 3 — System Design & MLOps : où vit la réconciliation ?
+# Bloc 3 · System Design & MLOps : où vit la réconciliation ?
 
 > La question : la réconciliation est-elle un **job batch matérialisé**, une **étape à la volée dans l'API**, une
 > **vue SQL**, ou un **estimateur récursif en ligne** ? Le choix détermine ce qu'on peut garantir **contractuellement**.

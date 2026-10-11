@@ -1,4 +1,4 @@
-# Tutoriel — relancer le bloc 6 (BayesReconPy)
+# Tutoriel : relancer le bloc 6 (BayesReconPy)
 
 Ce tutoriel suppose le dépôt installé (voir le [tutoriel du bloc 2](../02_mint_from_scratch/TUTORIEL.md) § 0–1).
 Il faut un accès internet pour le premier téléchargement (76 Mo).

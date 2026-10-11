@@ -1,4 +1,4 @@
-# Bloc 4 — Fondamentaux : ce que MinT garantit, et ce qu'il ne garantit pas
+# Bloc 4 · Fondamentaux : ce que MinT garantit, et ce qu'il ne garantit pas
 
 > Objectif : comprendre **pourquoi** MinT marche, et surtout **où il casse**. Il y a trois endroits : le biais, les
 > quantiles et le mur numérique. Le bloc se termine par la question d'entretien senior : « MASE dégradé au SKU,
@@ -51,7 +51,7 @@ sont **incohérentes**. On les réconcilie par `ỹ = S G ŷ`.
 **projeter** sur ce sous-espace. MinT incline la projection selon `W⁻¹` : il bouge peu les séries bien prévues et
 beaucoup les autres. OLS est le cas `W = I`, bottom-up le cas `G = [0 | I]`.
 
-> **À retenir — le contrat de MinT.**
+> **À retenir : le contrat de MinT.**
 > 1. `SGS = S` ⟺ l'absence de biais est **préservée**.
 > 2. Sous cette contrainte, MinT donne la plus petite variance d'erreur réconciliée, **à tous les niveaux à la
 >    fois** (Gauss-Markov, notebook 03 § 5).
@@ -93,14 +93,14 @@ MinT devient pire que le bottom-up à partir d'un biais d'environ **4,5 au total
 feuilles**. Ce n'est pas tout ou rien : c'est un **seuil**, et sa position dépend de la confiance que `W` accorde
 à la série biaisée.
 
-> **Point d'attention — « amélioré au national, dégradé au SKU » dépend de la baseline.** Comparé aux
+> **Point d'attention : « amélioré au national, dégradé au SKU » dépend de la baseline.** Comparé aux
 > prévisions de base, c'est vrai. Comparé au bottom-up, un MinT biaisé finit par perdre **partout**. Dans un
 > rapport, nommez toujours la baseline.
 
-> **Point d'attention — où débiaiser.** Corrigez la **prévision de base** avant la réconciliation. Ne corrigez
+> **Point d'attention : où débiaiser.** Corrigez la **prévision de base** avant la réconciliation. Ne corrigez
 > jamais la prévision réconciliée après coup : retoucher une seule série casse la cohérence.
 
-> **À retenir — le biais.**
+> **À retenir : le biais.**
 > - MinT **préserve** l'absence de biais, il ne la **crée** pas. Un biais se répand selon une colonne de `P`.
 > - Plus `W` fait confiance à la série biaisée, plus la contamination est forte.
 > - Le réflexe : **tester la moyenne des résidus par niveau, puis débiaiser avant de réconcilier.**
@@ -171,18 +171,18 @@ toutes les séries sont tirées ensemble :
 Le bootstrap indépendant reproduit l'erreur de B (0,760). Le bootstrap joint reproduit C sans connaître la vraie
 covariance. Dans `hierarchicalforecast`, ce sont les méthodes `Bootstrap` et `PERMBU`.
 
-> **Point d'attention — même avec des régions indépendantes, B échoue** (0,816 à ρ = 0). L'erreur du total est
+> **Point d'attention : même avec des régions indépendantes, B échoue** (0,816 à ρ = 0). L'erreur du total est
 > structurellement liée à celles des régions, puisque le total en est la somme. Un pipeline par série perd
 > toujours ce lien.
 
-> **Point d'attention — vérifier ce qu'on rééchantillonne.** Un bootstrap qui tire chaque série
+> **Point d'attention : vérifier ce qu'on rééchantillonne.** Un bootstrap qui tire chaque série
 > indépendamment, ou des résidus pris à des dates différentes selon les séries (historiques de longueurs
 > différentes, trous), est une méthode B déguisée. **Même instant, toutes les séries** : c'est la seule règle.
 
 > **Petite correction du plan.** Le tableau de balayage du plan indique une couverture de B de 0,766 pour
 > ρ = 0,6. Son propre script donne **0,764**, la valeur de son tableau principal.
 
-> **À retenir — le probabiliste.**
+> **À retenir : le probabiliste.**
 > - Ne **jamais** appliquer `P` à des quantiles (méthode A) : le résultat est cohérent, et faux dans les deux sens.
 > - Réconcilier une distribution = **projeter des échantillons joints**, puis lire les quantiles (méthode C).
 > - Des échantillons indépendants (méthode B) sous-estiment le risque agrégé : 0,764 au lieu de 0,900.
@@ -204,7 +204,7 @@ Bruit blanc, T = 156 (3 ans d'hebdomadaire) :
 | 500 | 156 | **non** | 1,000 | 2,3 |
 | 5 000 | 156 | **non** | 1,000 | 2,3 |
 
-> **Point d'attention — le mur existe aussi en mémoire.** La formule directe de `Var(r_ij)` construit un tenseur
+> **Point d'attention : le mur existe aussi en mémoire.** La formule directe de `Var(r_ij)` construit un tenseur
 > `T × m × m` : 31 Go pour m = 5 000. La première version de `schafer_strimmer_lambda` faisait exactement cela, et
 > le noyau du notebook 03 a été tué par l'OOM killer. λ ne dépend que de **sommes hors diagonale**, qui se
 > calculent avec la matrice de Gram `T × T` et des sommes par ligne : la mémoire passe de O(T·m²) à O(T² + T·m),
@@ -213,7 +213,7 @@ Bruit blanc, T = 156 (3 ans d'hebdomadaire) :
 > plus former : `W = λD + (1 − λ)E′E/T` est une **diagonale plus une matrice de rang T**, que l'identité de Woodbury
 > permet d'inverser sans jamais construire de matrice m × m.
 
-> **À retenir — corollaire de mission.** Avant de chiffrer, demander **le nombre de séries et la profondeur
+> **À retenir : corollaire de mission.** Avant de chiffrer, demander **le nombre de séries et la profondeur
 > d'historique**, dans cet ordre. Avec 40 000 SKU et 3 ans d'hebdomadaire, m/T ≈ 250 : le shrinkage n'est pas une
 > option, et la mémoire non plus.
 
@@ -231,7 +231,7 @@ est démontrée dans le notebook 03 :
 |---|---|---|---|
 | 1 | une prévision de base est **biaisée** | `t` de la moyenne des résidus par série (`residual_bias_table`) | total biaisé de +1,5 : t = +9,0, feuilles \|t\| < 1,3 |
 | 2 | `W` est **mal estimée** | backtest `ols` / `wls_struct` / `mint_shrink` par niveau, stabilité de λ | sans aucun biais, une `W` qui croit le total 3 fois plus précis qu'il ne l'est : MAE total 2,07 → 2,31, feuilles 2,07 → 2,10 |
-| 3 | **fuite** ou fenêtre inadaptée | fenêtre de `W` strictement antérieure, journal du référentiel, `W` sur deux sous-fenêtres | — (checklist) |
+| 3 | **fuite** ou fenêtre inadaptée | fenêtre de `W` strictement antérieure, journal du référentiel, `W` sur deux sous-fenêtres |, (checklist) |
 
 **La réponse senior : quel niveau porte la décision ?** Si l'appro se décide au SKU, une amélioration au national
 payée au SKU est une régression.
@@ -251,12 +251,12 @@ Avec un biais croissant sur le total, trois régimes apparaissent :
 | **4,5 → 5** | **bottom-up** | **MinT** | **oui** |
 | 5,5 → 8 | bottom-up | bottom-up | non |
 
-> **Point d'attention — pondérer des MAE bruts.** Les MAE du total (≈ 4) et des feuilles (≈ 2,4) ne sont pas à
+> **Point d'attention : pondérer des MAE bruts.** Les MAE du total (≈ 4) et des feuilles (≈ 2,4) ne sont pas à
 > la même échelle. Le score `0,1 × MAE total + 0,9 × MAE feuilles` reste dominé par le total : il choisit le
 > bottom-up même quand la décision se prend à la feuille. Pondérez des erreurs **mises à l'échelle** (MASE, ou MAE
 > relatif à la base), jamais des MAE bruts entre niveaux.
 
-> **À retenir — pondérer les niveaux.**
+> **À retenir : pondérer les niveaux.**
 > - Sans biais et avec la vraie `W`, MinT est optimal **pour tous les niveaux à la fois** : les poids n'y changent
 >   rien.
 > - Les poids servent à **arbitrer quand les hypothèses tombent** : biais, `W` estimée, cohérence souple

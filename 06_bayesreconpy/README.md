@@ -1,4 +1,4 @@
-# Bloc 6 — Stack technique : BayesReconPy, réconcilier des ventes intermittentes sans valeurs négatives
+# Bloc 6 · Stack technique : BayesReconPy, réconcilier des ventes intermittentes sans valeurs négatives
 
 > **La question du plan.** *Sur une hiérarchie de ventes intermittentes, combien de prévisions négatives MinT
 > produit-il, et combien BayesReconPy en produit-il ?*
@@ -37,10 +37,10 @@ Chaque point du plan a été vérifié le 03/10/2026 (PyPI, GitHub, Crossref, in
 | Python | ≥ 3.12 | `requires_python >= 3.12` | conforme |
 | **Licence** | **MIT, aucune friction** | **incohérente** : PyPI et `pyproject.toml` disent **MIT**, mais le fichier `LICENSE.md` du dépôt et GitHub disent **LGPL-3.0** | écart |
 | **Installation** | `pip install` | **cassée telle quelle depuis le 25/09/2026** : la dépendance `PuLP>=2.9` n'est pas bornée, et PuLP 4.0.0 ne fournit plus `PULP_CBC_CMD`, que le paquet importe. Solution : `pulp<4` | écart |
-| **Effet de bord** | — | `reconc_td_cond` **modifie en place** les pmf reçues (≈ 1e-9 ajouté, sans renormaliser) ; un appel suivant avec les mêmes objets peut échouer | écart |
-| Contrainte d'usage | — | TD-cond exige une hiérarchie **équilibrée** : chaque article dans exactement un groupe du niveau le plus bas | info |
+| **Effet de bord** | - | `reconc_td_cond` **modifie en place** les pmf reçues (≈ 1e-9 ajouté, sans renormaliser) ; un appel suivant avec les mêmes objets peut échouer | écart |
+| Contrainte d'usage | - | TD-cond exige une hiérarchie **équilibrée** : chaque article dans exactement un groupe du niveau le plus bas | info |
 | Communauté | « nettement plus petite que Nixtla » | 15 étoiles, 0 fork sur GitHub ; dernier commit le 22/05/2026 | conforme |
-| Dépendances | — | lourdes : jax, scikit-learn, PuLP, jnlr. On les isole dans un groupe uv dédié | info |
+| Dépendances | - | lourdes : jax, scikit-learn, PuLP, jnlr. On les isole dans un groupe uv dédié | info |
 
 **Sur la licence.** En cas de contradiction, le fichier de licence du dépôt fait foi en pratique, et la
 LGPL-3.0 impose des obligations si l'on **modifie et redistribue** le paquet (l'utiliser comme bibliothèque reste

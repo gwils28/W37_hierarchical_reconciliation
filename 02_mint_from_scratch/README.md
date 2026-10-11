@@ -1,4 +1,4 @@
-# Bloc 2 — MinT(shrink) de zéro en NumPy
+# Bloc 2 · MinT(shrink) de zéro en NumPy
 
 > Objectif : écrire `G = (S'W⁻¹S)⁻¹S'W⁻¹` de ma main, avec un shrinkage Schäfer–Strimmer, et prouver l'équivalence
 > numérique avec `HierarchicalForecast` (`MinTrace(method="mint_shrink")`).
@@ -52,7 +52,7 @@ Environnement de référence : Python 3.12, `numpy 2.5.3`, `pandas 2.3.3`, `stat
    (un écart de 0 exact voudrait dire que j'ai recopié leur code).
 7. **Diagnostic de l'écart résiduel** (voir plus bas), puis **démonstration du piège `m > T`**.
 
-## Résultats (hierarchicalforecast 1.5.1 — identiques au bit près en 1.5.3)
+## Résultats (hierarchicalforecast 1.5.1 : identiques au bit près en 1.5.3)
 
 Sortie de `uv run w37 mint` :
 

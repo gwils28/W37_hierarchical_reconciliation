@@ -1,4 +1,4 @@
-# Bloc 5 — Mini-projet éCO2mix : réconcilier les prévisions de consommation des régions et de la France
+# Bloc 5 · Mini-projet éCO2mix : réconcilier les prévisions de consommation des régions et de la France
 
 > **Objectif métier.** Supprimer les arbitrages manuels du comité de pilotage en livrant un jeu unique de
 > prévisions de consommation électrique dont **la somme des régions reproduit exactement le total France**,
@@ -41,7 +41,7 @@ Les notebooks suivent le code d'encadrés du dépôt : intuition · exemple · p
 
 **Source** : [éCO2mix régional, données consolidées et définitives](https://odre.opendatasoft.com/explore/dataset/eco2mix-regional-cons-def/information/)
 et [éCO2mix national](https://odre.opendatasoft.com/explore/dataset/eco2mix-national-cons-def/information/),
-**Open Data Réseaux Énergies (ODRÉ) — RTE, Licence Ouverte v2.0**. Elles sont téléchargées par l'API
+**Open Data Réseaux Énergies (ODRÉ) : RTE, Licence Ouverte v2.0**. Elles sont téléchargées par l'API
 (`w37 eco2mix download`), et chaque fichier brut est tracé dans un manifeste (URL, date, taille, sha256).
 
 **Hiérarchie** : 12 régions métropolitaines → France. Le total est construit comme la somme des régions.

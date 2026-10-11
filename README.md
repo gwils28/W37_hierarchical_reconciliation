@@ -1,4 +1,4 @@
-# W37 — « Cohérent ne veut pas dire calibré »
+# W37 : « Cohérent ne veut pas dire calibré »
 
 Veille hebdomadaire, semaine ISO 2026-W37 : la réconciliation hiérarchique, de MinT ponctuel au probabiliste.
 Le plan complet est dans [`W37.md`](W37.md). Ce dépôt couvre les **6 blocs** du plan.

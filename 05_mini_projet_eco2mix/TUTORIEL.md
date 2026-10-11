@@ -1,4 +1,4 @@
-# Tutoriel — relancer le bloc 5 (mini-projet éCO2mix)
+# Tutoriel : relancer le bloc 5 (mini-projet éCO2mix)
 
 Ce tutoriel suppose le dépôt installé (`uv sync`, voir le [tutoriel du bloc 2](../02_mint_from_scratch/TUTORIEL.md)
 § 0–1). Il faut un accès internet pour le premier téléchargement (environ 90 Mo).
@@ -58,7 +58,7 @@ uv run jupyter lab 05_mini_projet_eco2mix
 | 2 | `notebooks/02_modeles_de_base_et_hypotheses.ipynb` | 20 min | idem (réentraîne une origine, ≈ 10 s) |
 | 3 | `notebooks/03_reconciliation_protocole_principal.ipynb` | 15 min | `backtest` |
 | 4 | `notebooks/04_robustesse_et_tests.ipynb` | 25 min | `backtest --which robustness` |
-| — | `reconciliation_eco2mix.ipynb` | — | rien : il lance tout lui-même |
+| - | `reconciliation_eco2mix.ipynb` | - | rien : il lance tout lui-même |
 
 Pour une révision express, lisez les encadrés « À retenir » et « Test d'hypothèse ». Les notebooks sont versionnés **avec leurs sorties**
 et exportent leurs figures en SVG dans `05_mini_projet_eco2mix/figures/`.

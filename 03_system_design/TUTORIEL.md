@@ -1,4 +1,4 @@
-# Tutoriel — relancer le bloc 3 (job de réconciliation avec quality gate)
+# Tutoriel : relancer le bloc 3 (job de réconciliation avec quality gate)
 
 Prérequis et installation : identiques au bloc 2, voir [`../02_mint_from_scratch/TUTORIEL.md`](../02_mint_from_scratch/TUTORIEL.md),
 sections 0 et 1. En résumé : `uv sync` à la racine du dépôt.
@@ -90,7 +90,7 @@ Le principe est que **chaque règle du contrat a au moins un test où elle écho
 ## 5. Où est le code
 
 ```
-configs/reconciliation.yaml            # le contrat (v3) — seule source des seuils
+configs/reconciliation.yaml            # le contrat (v3), seule source des seuils
 src/w37_reconciliation/pipeline/
 ├── contract.py          # load_contract : lit le YAML, échoue tôt si une section manque
 ├── hierarchy.py         # s_hash, hash_check
