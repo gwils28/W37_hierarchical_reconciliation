@@ -48,10 +48,10 @@ pour supprimer. **La cohérence est une propriété de l'artefact, pas de la req
 
 | Option | Pour | Contre | |
 |---|---|---|---|
-| **A. Batch matérialisé** | Cohérence garantie par construction ; auditable ; un seul `run_id` à citer en comité S&OP | Latence de rafraîchissement ; recalcul complet si la hiérarchie change | ✅ **retenu** |
-| **B. À la volée dans l'API** | Toujours à jour ; pas de stockage redondant | **Cohérence non garantie entre appels** ; coût CPU par requête ; impossible à auditer a posteriori | ❌ |
-| **C. Vue SQL dans l'entrepôt** | Zéro infra ; le client possède le code | MinT en SQL devient ingérable dès que `W` n'est pas diagonale : on retombe en pratique sur du bottom-up déguisé | ❌ |
-| **D. Estimation récursive en ligne** ([arXiv 2606.23326](https://arxiv.org/abs/2606.23326)) | `W` mise à jour à chaque observation, sans réestimation complète ; s'adapte vite aux changements de régime | État mutable à versionner et à rejouer ; déboguer un chiffre publié il y a trois semaines devient de l'archéologie | ⏳ *pas encore* |
+| **A. Batch matérialisé** | Cohérence garantie par construction ; auditable ; un seul `run_id` à citer en comité S&OP | Latence de rafraîchissement ; recalcul complet si la hiérarchie change | **retenu** |
+| **B. À la volée dans l'API** | Toujours à jour ; pas de stockage redondant | **Cohérence non garantie entre appels** ; coût CPU par requête ; impossible à auditer a posteriori | écarté |
+| **C. Vue SQL dans l'entrepôt** | Zéro infra ; le client possède le code | MinT en SQL devient ingérable dès que `W` n'est pas diagonale : on retombe en pratique sur du bottom-up déguisé | écarté |
+| **D. Estimation récursive en ligne** ([arXiv 2606.23326](https://arxiv.org/abs/2606.23326)) | `W` mise à jour à chaque observation, sans réestimation complète ; s'adapte vite aux changements de régime | État mutable à versionner et à rejouer ; déboguer un chiffre publié il y a trois semaines devient de l'archéologie | *pas encore* |
 
 **Décision : A, batch matérialisé avec un quality gate bloquant.**
 

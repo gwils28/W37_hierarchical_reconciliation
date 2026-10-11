@@ -22,7 +22,7 @@ Pas à pas complet : **[TUTORIEL.md](TUTORIEL.md)**.
 | Notebook | Ce qu'on y apprend |
 |---|---|
 | [`01_conditionnement_a_la_main`](notebooks/01_conditionnement_a_la_main.ipynb) | pourquoi une gaussienne déborde sous zéro ; le conditionnement sur une grille de 2 articles, calculé exactement ; l'algorithme BUIS en dix lignes ; BayesReconPy retrouve la solution exacte |
-| [`02_m5_negatifs_et_precision`](notebooks/02_m5_negatifs_et_precision.ipynb) | la réponse chiffrée, le mécanisme des négatifs, la précision (MASE, MIS, RPS), 🔬 validation contre la vignette R officielle, 🔬 comparaison article par article |
+| [`02_m5_negatifs_et_precision`](notebooks/02_m5_negatifs_et_precision.ipynb) | la réponse chiffrée, le mécanisme des négatifs, la précision (MASE, MIS, RPS), validation contre la vignette R officielle, comparaison article par article |
 
 ---
 
@@ -32,17 +32,17 @@ Chaque point du plan a été vérifié le 03/10/2026 (PyPI, GitHub, Crossref, in
 
 | Critère | Le plan | Constaté | |
 |---|---|---|---|
-| Version | 0.5.0 du 10 mai 2026 | 0.5.0, publiée le 10/05/2026 sur PyPI | ✅ |
-| Revue par les pairs | JOSS, vol. 10 n° 111, 30/07/2025 | confirmé (Biswas, Nespoli, Azzimonti, Zambon, Rubattu, Corani), DOI 10.21105/joss.08336 | ✅ |
-| Python | ≥ 3.12 | `requires_python >= 3.12` | ✅ |
-| **Licence** | **MIT, aucune friction** | **incohérente** : PyPI et `pyproject.toml` disent **MIT**, mais le fichier `LICENSE.md` du dépôt et GitHub disent **LGPL-3.0** | ⚠️ |
-| **Installation** | `pip install` | **cassée telle quelle depuis le 25/09/2026** : la dépendance `PuLP>=2.9` n'est pas bornée, et PuLP 4.0.0 ne fournit plus `PULP_CBC_CMD`, que le paquet importe. Solution : `pulp<4` | ⚠️ |
-| **Effet de bord** | — | `reconc_td_cond` **modifie en place** les pmf reçues (≈ 1e-9 ajouté, sans renormaliser) ; un appel suivant avec les mêmes objets peut échouer | ⚠️ |
-| Contrainte d'usage | — | TD-cond exige une hiérarchie **équilibrée** : chaque article dans exactement un groupe du niveau le plus bas | ℹ️ |
-| Communauté | « nettement plus petite que Nixtla » | 15 étoiles, 0 fork sur GitHub ; dernier commit le 22/05/2026 | ✅ |
-| Dépendances | — | lourdes : jax, scikit-learn, PuLP, jnlr. On les isole dans un groupe uv dédié | ℹ️ |
+| Version | 0.5.0 du 10 mai 2026 | 0.5.0, publiée le 10/05/2026 sur PyPI | conforme |
+| Revue par les pairs | JOSS, vol. 10 n° 111, 30/07/2025 | confirmé (Biswas, Nespoli, Azzimonti, Zambon, Rubattu, Corani), DOI 10.21105/joss.08336 | conforme |
+| Python | ≥ 3.12 | `requires_python >= 3.12` | conforme |
+| **Licence** | **MIT, aucune friction** | **incohérente** : PyPI et `pyproject.toml` disent **MIT**, mais le fichier `LICENSE.md` du dépôt et GitHub disent **LGPL-3.0** | écart |
+| **Installation** | `pip install` | **cassée telle quelle depuis le 25/09/2026** : la dépendance `PuLP>=2.9` n'est pas bornée, et PuLP 4.0.0 ne fournit plus `PULP_CBC_CMD`, que le paquet importe. Solution : `pulp<4` | écart |
+| **Effet de bord** | — | `reconc_td_cond` **modifie en place** les pmf reçues (≈ 1e-9 ajouté, sans renormaliser) ; un appel suivant avec les mêmes objets peut échouer | écart |
+| Contrainte d'usage | — | TD-cond exige une hiérarchie **équilibrée** : chaque article dans exactement un groupe du niveau le plus bas | info |
+| Communauté | « nettement plus petite que Nixtla » | 15 étoiles, 0 fork sur GitHub ; dernier commit le 22/05/2026 | conforme |
+| Dépendances | — | lourdes : jax, scikit-learn, PuLP, jnlr. On les isole dans un groupe uv dédié | info |
 
-⚠️ **Sur la licence.** En cas de contradiction, le fichier de licence du dépôt fait foi en pratique, et la
+**Sur la licence.** En cas de contradiction, le fichier de licence du dépôt fait foi en pratique, et la
 LGPL-3.0 impose des obligations si l'on **modifie et redistribue** le paquet (l'utiliser comme bibliothèque reste
 simple). Avant une mission, **demander aux auteurs de lever l'ambiguïté**, et ne pas écrire « MIT » dans une
 proposition commerciale.
@@ -102,7 +102,7 @@ indépendants donne un total beaucoup trop étroit. C'est la méthode B du bloc 
 partant des agrégats : il est le meilleur en RPS et en MIS sur les articles, et le meilleur en MIS sur les
 agrégats.
 
-### 🔬 Validation contre la vignette R officielle
+### Validation contre la vignette R officielle
 
 La vignette [`mixed_reconciliation`](https://cran.r-project.org/web/packages/bayesRecon/vignettes/mixed_reconciliation.html)
 du paquet R `bayesRecon` traite le même magasin avec les mêmes prévisions de base. Nos skill scores (% vs base,
@@ -121,7 +121,7 @@ positif = mieux) la reproduisent :
 même générateur aléatoire). Le seul écart notable, le RPS gaussien des articles, tient à la discrétisation d'une
 loi normale sur les entiers. Nous utilisons Φ((k + 0,5 − μ)/σ).
 
-### 🔬 Article par article
+### Article par article
 
 TD-cond a un meilleur RPS que MinT gaussien sur **66 %** des articles, et que la base sur **59 %**. MixCond ne se
 distingue pas de la base (52 %, p = 0,28). Les p-valeurs de Wilcoxon sont **indicatives** : les articles partagent

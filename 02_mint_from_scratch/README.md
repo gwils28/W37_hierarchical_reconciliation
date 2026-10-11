@@ -79,10 +79,10 @@ piege m > T : {"T": 4, "m": 6, "rank_W1": 4, "cond_W1": 1.67e+17, "lambda": 0.90
 
 | Critère « c'est fini quand… » | Seuil | Mesuré | |
 |---|---|---|---|
-| `SGS − S` nul | < 1e-12 | 2,2e-16 | ✅ |
-| Incohérence des prévisions réconciliées | précision machine | 5,7e-14 (valeurs ~165) | ✅ |
-| Écart relatif à la bibliothèque | < 1e-3 | **1,07e-5** (le plan annonçait ~1,3e-5) | ✅ |
-| Écart non nul | > 0 | 1,8e-3 en absolu | ✅ |
+| `SGS − S` nul | < 1e-12 | 2,2e-16 | OK |
+| Incohérence des prévisions réconciliées | précision machine | 5,7e-14 (valeurs ~165) | OK |
+| Écart relatif à la bibliothèque | < 1e-3 | **1,07e-5** (le plan annonçait ~1,3e-5) | OK |
+| Écart non nul | > 0 | 1,8e-3 en absolu | OK |
 
 ## Pourquoi l'écart n'est pas nul : la vraie raison
 

@@ -87,12 +87,12 @@ bloc 3.
 
 | # | Bloc | Livrable | État |
 |---|---|---|---|
-| 1 | Veille | 4 ressources + 2 marque-pages vérifiés ; synthèse en 3 points ; note « surcoté » | ✅ |
-| 2 | Ingénierie & code | MinT(shrink) de zéro : 3 assertions vertes, écart à la bibliothèque **1,07e-5** (< 1e-3) ; 4 notebooks | ✅ |
-| 3 | System design | Architecture + `reconciliation.yaml` v3 + job et gate exécutables et testés | ✅ |
-| 4 | Fondamentaux | Biais propagé (seuil ≈ 4,5), quantiles A/B/C (B : **0,764** au lieu de 0,900), bootstrap joint, Gauss-Markov ; 3 notebooks | ✅ |
-| 5 | Mini-projet éCO2mix | 12 régions → France, 4 + 119 origines ; cohérence exacte ; BU meilleur, MinT shrink **+2,3 %** (W in-sample fausse, démontré) ; 5 notebooks | ✅ |
-| 6 | BayesReconPy | MinT gaussien : **11 moyennes et 98 % des bornes basses négatives** sur M5 ; conditionnement : 0 ; TD-cond le plus précis ; vignette R reproduite ; 2 notebooks | ✅ |
+| 1 | Veille | 4 ressources + 2 marque-pages vérifiés ; synthèse en 3 points ; note « surcoté » | fait |
+| 2 | Ingénierie & code | MinT(shrink) de zéro : 3 assertions vertes, écart à la bibliothèque **1,07e-5** (< 1e-3) ; 4 notebooks | fait |
+| 3 | System design | Architecture + `reconciliation.yaml` v3 + job et gate exécutables et testés | fait |
+| 4 | Fondamentaux | Biais propagé (seuil ≈ 4,5), quantiles A/B/C (B : **0,764** au lieu de 0,900), bootstrap joint, Gauss-Markov ; 3 notebooks | fait |
+| 5 | Mini-projet éCO2mix | 12 régions → France, 4 + 119 origines ; cohérence exacte ; BU meilleur, MinT shrink **+2,3 %** (W in-sample fausse, démontré) ; 5 notebooks | fait |
+| 6 | BayesReconPy | MinT gaussien : **11 moyennes et 98 % des bornes basses négatives** sur M5 ; conditionnement : 0 ; TD-cond le plus précis ; vignette R reproduite ; 2 notebooks | fait |
 
 ## Ce qu'il faut retenir
 

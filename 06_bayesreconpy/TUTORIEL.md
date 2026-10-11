@@ -16,7 +16,7 @@ Le groupe est déclaré dans `pyproject.toml` :
 bayesrecon = ["bayesreconpy==0.5.0", "pulp>=2.9,<4"]
 ```
 
-⚠️ **Pourquoi `pulp<4`.** BayesReconPy 0.5.0 demande `PuLP>=2.9` sans borne supérieure. PuLP 4.0.0 (25/09/2026)
+**Pourquoi `pulp<4`.** BayesReconPy 0.5.0 demande `PuLP>=2.9` sans borne supérieure. PuLP 4.0.0 (25/09/2026)
 ne fournit plus `PULP_CBC_CMD`, que le paquet importe : sans la borne, `import bayesreconpy.reconc_td_cond`
 échoue avec `ImportError: cannot import name 'PULP_CBC_CMD'`.
 

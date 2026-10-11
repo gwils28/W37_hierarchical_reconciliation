@@ -7,7 +7,7 @@
 | MixCond | loi jointe des articles conditionnée aux agrégats (échantillonnage d'importance) | 0, 1, 2, … |
 | TD-cond | en deux temps : agrégats d'abord, puis répartition vers les articles | 0, 1, 2, … |
 
-⚠️ `reconc_td_cond` (BayesReconPy 0.5.0) **modifie en place** les pmf qu'on lui passe (≈ 1e-9 ajouté à
+`reconc_td_cond` (BayesReconPy 0.5.0) **modifie en place** les pmf qu'on lui passe (≈ 1e-9 ajouté à
 certaines probabilités, sans renormalisation). Un appel suivant avec les mêmes objets peut alors échouer
 (`probabilities do not sum to 1`). Chaque méthode ci-dessous reçoit donc des **copies**.
 """

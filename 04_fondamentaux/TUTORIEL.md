@@ -44,7 +44,7 @@ Total     230.864         234.273  0.922         217.383  0.764             230.
 
 Ce qu'il faut regarder : les trois colonnes `cov`. Seule la colonne C vaut 0,900 partout.
 
-> 💡 **Expérience à faire.** Relancez avec `--rho 0.0` puis `--rho 0.9`. La couverture B au total **baisse** quand
+> **Expérience à faire.** Relancez avec `--rho 0.0` puis `--rho 0.9`. La couverture B au total **baisse** quand
 > ρ monte (0,816 → 0,746), alors que l'écart « somme des quantiles » se resserre. Les deux erreurs vont en sens
 > opposé.
 
@@ -62,8 +62,8 @@ Choisissez le noyau **Python 3** (celui du `.venv`), puis lisez les notebooks da
 | 02 | `02_quantiles_et_calibration.ipynb` | pourquoi des quantiles ne se réconcilient pas, méthodes A / B / C, **bootstrap joint** | 20 min |
 | 03 | `03_diagnostic_et_entretien.ipynb` | le mur `m > T`, les trois hypothèses de la question d'entretien, Gauss-Markov, **la réponse rédigée** | 15 min |
 
-Chaque notebook suit le même code d'encadrés : 💡 intuition · 🧪 exemple chiffré · ⚠️ point d'attention ·
-📌 à retenir. Pour une révision express, lisez seulement les encadrés 📌.
+Chaque notebook suit le même code d'encadrés : intuition · exemple chiffré · point d'attention ·
+à retenir. Pour une révision express, lisez seulement les encadrés « À retenir ».
 
 Les notebooks sont versionnés **avec leurs sorties**. Ils exportent leurs figures en SVG dans
 `04_fondamentaux/figures/`, et c'est là que le README et l'article vont les chercher. Pour tout régénérer :
@@ -72,7 +72,7 @@ Les notebooks sont versionnés **avec leurs sorties**. Ils exportent leurs figur
 make notebooks            # ré-exécute les notebooks des blocs 2 et 4
 ```
 
-> ⚠️ **Point d'attention — mémoire.** La cellule « mur numérique » du notebook 03 estime une covariance pour
+> **Point d'attention — mémoire.** La cellule « mur numérique » du notebook 03 estime une covariance pour
 > m = 5 000 séries. Elle demande environ 0,6 Go et 25 s. Une ancienne version du calcul de λ allouait un tenseur
 > de 31 Go, qui faisait tuer le noyau par l'OOM killer. Pour vous protéger d'une régression, vous pouvez plafonner
 > la mémoire du noyau : une allocation excessive lève alors une `MemoryError` lisible au lieu d'un kill silencieux.

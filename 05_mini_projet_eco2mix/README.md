@@ -26,14 +26,14 @@ tourne de bout en bout sans intervention : **[`reconciliation_eco2mix.ipynb`](re
 
 | Notebook | Ce qu'on y apprend |
 |---|---|
-| [`01_donnees_et_hierarchie`](notebooks/01_donnees_et_hierarchie.ipynb) | provenance, défaut de changement d'heure de la source, 🔬 test d'additivité, saisonnalités, corrélation des régions |
-| [`02_modeles_de_base_et_hypotheses`](notebooks/02_modeles_de_base_et_hypotheses.ipynb) | SeasonalNaive et MSTL ; 🔬 biais, bruit blanc, structure de W ; l'hypothèse cachée de `mint_shrink` |
+| [`01_donnees_et_hierarchie`](notebooks/01_donnees_et_hierarchie.ipynb) | provenance, défaut de changement d'heure de la source, test d'additivité, saisonnalités, corrélation des régions |
+| [`02_modeles_de_base_et_hypotheses`](notebooks/02_modeles_de_base_et_hypotheses.ipynb) | SeasonalNaive et MSTL ; biais, bruit blanc, structure de W ; l'hypothèse cachée de `mint_shrink` |
 | [`03_reconciliation_protocole_principal`](notebooks/03_reconciliation_protocole_principal.ipynb) | le protocole, ce que fait chaque méthode, le tableau de la Definition of Done, le cas du 12 novembre |
-| [`04_robustesse_et_tests`](notebooks/04_robustesse_et_tests.ipynb) | 119 origines, 🔬 tests appariés avec correction de Holm, 🧪 expérience contrôlée sur W, conclusion |
+| [`04_robustesse_et_tests`](notebooks/04_robustesse_et_tests.ipynb) | 119 origines, tests appariés avec correction de Holm, expérience contrôlée sur W, conclusion |
 | [`reconciliation_eco2mix`](reconciliation_eco2mix.ipynb) | la Definition of Done, exécutable de bout en bout |
 
-Les notebooks suivent le code d'encadrés du dépôt : 💡 intuition · 🧪 exemple · ⚠️ point d'attention ·
-📌 à retenir, plus **🔬 test d'hypothèse** (hypothèse formulée, testée, puis acceptée ou rejetée).
+Les notebooks suivent le code d'encadrés du dépôt : intuition · exemple · point d'attention ·
+à retenir, plus **test d'hypothèse** (hypothèse formulée, testée, puis acceptée ou rejetée).
 
 ---
 
@@ -54,7 +54,7 @@ et [éCO2mix national](https://odre.opendatasoft.com/explore/dataset/eco2mix-nat
 |---|---|---|
 | **La Nouvelle-Aquitaine s'arrête au 31/12/2024** ; les 11 autres régions vont jusqu'au 30/06/2026 | depuis 2025, la somme des régions n'est plus le total France | protocole limité aux **données définitives 2013 → 2024** |
 | **Défaut de changement d'heure** : la source range 48 demi-heures par jour local. Chaque année et dans chaque région : **2 doublons** fin mars, **1 heure manquante** fin octobre | MSTL refuse les trous ; une ligne absente fausse le total sans aucune erreur | doublons fusionnés, heure interpolée et marquée (144 heures sur 12 ans × 12 régions) ; tout trou de plus d'une heure lève une erreur |
-| **Le total officiel n'est pas toujours la somme des régions** : +7 à +15 MW toute l'année 2013, jusqu'à 222 MW les 7-8 octobre 2016 | réconcilier vers un total incohérent n'aurait pas de sens | 🔬 test année par année : écart ≤ 6 MW (l'arrondi) de 2014 à 2024 hors 2016, donc **sur toute la période étudiée** |
+| **Le total officiel n'est pas toujours la somme des régions** : +7 à +15 MW toute l'année 2013, jusqu'à 222 MW les 7-8 octobre 2016 | réconcilier vers un total incohérent n'aurait pas de sens | test année par année : écart ≤ 6 MW (l'arrondi) de 2014 à 2024 hors 2016, donc **sur toute la période étudiée** |
 
 ![Le défaut de changement d'heure](figures/changement_heure.svg)
 
@@ -81,12 +81,12 @@ Tout est dans [`configs/eco2mix.yaml`](../configs/eco2mix.yaml) :
 
 | | Hypothèse | Test | Résultat |
 |---|---|---|---|
-| 🔬 | Le total France = Σ régions | écart national − somme, année par année | **acceptée** sur 2014-2024 hors 2016 (≤ 6 MW) |
-| 🔬 H1 | Prévisions de base sans biais | t HAC + Holm, sur les **erreurs hors échantillon** (119 origines) | **acceptée** : aucun biais significatif |
-| 🔬 H2 | Résidus in-sample = bruit blanc | Ljung-Box (24 h, 168 h) | **rejetée** partout ; autocorrélation négative à 3-6 h et 48 h : signature d'un **lissage bilatéral** |
-| 🔬 H3 | W in-sample ∝ covariance des vraies erreurs | corrélation moyenne entre régions, IC bootstrap sur les origines | **rejetée** : 0,11 in-sample contre **0,56 [0,45 ; 0,65]** hors échantillon |
+| Additivité | Le total France = Σ régions | écart national − somme, année par année | **acceptée** sur 2014-2024 hors 2016 (≤ 6 MW) |
+| H1 | Prévisions de base sans biais | t HAC + Holm, sur les **erreurs hors échantillon** (119 origines) | **acceptée** : aucun biais significatif |
+| H2 | Résidus in-sample = bruit blanc | Ljung-Box (24 h, 168 h) | **rejetée** partout ; autocorrélation négative à 3-6 h et 48 h : signature d'un **lissage bilatéral** |
+| H3 | W in-sample ∝ covariance des vraies erreurs | corrélation moyenne entre régions, IC bootstrap sur les origines | **rejetée** : 0,11 in-sample contre **0,56 [0,45 ; 0,65]** hors échantillon |
 
-⚠️ **Le test de biais sur résidus in-sample ne prouve rien avec MSTL** : ses résidus sont les *restes* d'une
+**Le test de biais sur résidus in-sample ne prouve rien avec MSTL** : ses résidus sont les *restes* d'une
 décomposition, centrés par construction (notebook 02, § 4). Le test utile est hors échantillon.
 
 ![Corrélations : ce que voit W, et la réalité](figures/correlations_in_vs_oos.svg)

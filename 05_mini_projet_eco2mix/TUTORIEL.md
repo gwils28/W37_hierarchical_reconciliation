@@ -60,7 +60,7 @@ uv run jupyter lab 05_mini_projet_eco2mix
 | 4 | `notebooks/04_robustesse_et_tests.ipynb` | 25 min | `backtest --which robustness` |
 | — | `reconciliation_eco2mix.ipynb` | — | rien : il lance tout lui-même |
 
-Pour une révision express, lisez les encadrés 📌 et 🔬. Les notebooks sont versionnés **avec leurs sorties**
+Pour une révision express, lisez les encadrés « À retenir » et « Test d'hypothèse ». Les notebooks sont versionnés **avec leurs sorties**
 et exportent leurs figures en SVG dans `05_mini_projet_eco2mix/figures/`.
 
 Pour tout régénérer :
@@ -79,7 +79,7 @@ Pour tout régénérer :
 | Combien d'origines faut-il pour que le test devienne net ? | notebook 04, § 2 | sous-échantillonner les origines et regarder les p-valeurs |
 | Le défaut d'heure existe-t-il dans le jeu national ? | notebook 01 | appliquer `clean_half_hourly` à `read_national` |
 
-⚠️ **Point d'attention.** Modifier le protocole **après** avoir vu les résultats, puis garder la version qui
+**Point d'attention.** Modifier le protocole **après** avoir vu les résultats, puis garder la version qui
 arrange, c'est du *p-hacking*. Toute modification doit être consignée dans le README (§ « Ce que ce bloc corrige
 ou précise ») avec sa raison.
 
