@@ -89,11 +89,16 @@ def run_backtest_stage(cfg: dict, paths: Paths, which: str = "main", log=print) 
     hier = load_hierarchy(cfg, paths)
     origins = origins_from_config(cfg, which)
     log(f"  {which} : {len(origins)} origines, {len(hier.order)} séries")
-    out = run_backtest(hier, origins, BacktestSpec.from_config(cfg), log=log)
+    out = run_backtest(hier, origins, BacktestSpec.from_config(cfg, which), log=log)
     paths.results.mkdir(parents=True, exist_ok=True)
     for name, df in out.items():
         df.to_parquet(paths.results / f"{which}_{name}.parquet", index=False)
     return out
+
+
+def load_national(paths: Paths) -> pd.DataFrame:
+    """Total officiel et prévision J−1 de RTE, horaires (UTC)."""
+    return pd.read_parquet(paths.interim / "national_hourly.parquet")
 
 
 def load_results(paths: Paths, which: str = "main") -> dict[str, pd.DataFrame]:

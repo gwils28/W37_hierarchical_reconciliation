@@ -31,6 +31,15 @@ backtest:
   reconcile_model: MSTL                   # SeasonalNaive est déjà cohérent (cf. README) : on réconcilie MSTL
   methods: [BottomUp, ols, wls_struct, wls_var, mint_shrink]
 
+# Études de confirmation, ajoutées APRÈS les résultats de 2024 (cf. README § « Benchmark et études de
+# confirmation »). Elles mettent les conclusions à l'épreuve en changeant UNE chose à la fois : l'année, puis le
+# modèle de base. Tout le reste (h, fenêtre, méthodes, métrique) est celui du protocole ci-dessus.
+confirmation:
+  annee_2023: {start: "2023-01-10", end: "2023-12-29", every_days: 3}
+  ets_2024:                               # AutoETS(24) : résidus in-sample = vraies erreurs à 1 pas
+    {start: "2024-01-09", end: "2024-12-30", every_days: 3,
+     models: [SeasonalNaive, AutoETS], reconcile_model: AutoETS}
+
 inference:
   alpha: 0.05
   multiple_testing: holm                  # 12 régions testées : correction des p-valeurs

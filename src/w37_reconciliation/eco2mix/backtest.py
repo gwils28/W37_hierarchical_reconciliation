@@ -16,7 +16,7 @@ import pandas as pd
 from hierarchicalforecast.core import HierarchicalReconciliation
 from hierarchicalforecast.methods import BottomUp, MinTrace
 from statsforecast import StatsForecast
-from statsforecast.models import MSTL, SeasonalNaive
+from statsforecast.models import MSTL, AutoETS, SeasonalNaive
 
 from ..data import Hierarchy, to_wide
 from ..mint import shrunk_covariance
@@ -26,20 +26,37 @@ METHOD_LABELS = {"BottomUp": "BU", "ols": "OLS", "wls_struct": "WLS struct", "wl
                  "mint_shrink": "MinT shrink"}
 
 
+# nom de colonne en aval de chaque modèle NON réconcilié (le modèle réconcilié s'appelle toujours « base »)
+MODEL_LABELS = {"SeasonalNaive": "SN", "MSTL": "MSTL", "AutoETS": "ETS"}
+
+
 @dataclass(frozen=True)
 class BacktestSpec:
     h: int = 24
     season: int = 168
     train_weeks: int = 52
+    models: tuple[str, ...] = ("SeasonalNaive", "MSTL")
     reconcile_model: str = "MSTL"
     methods: tuple[str, ...] = ("BottomUp", "ols", "wls_struct", "wls_var", "mint_shrink")
     n_jobs: int = -1
 
     @classmethod
-    def from_config(cls, cfg: dict) -> BacktestSpec:
+    def from_config(cls, cfg: dict, which: str = "main") -> BacktestSpec:
+        """Les études de confirmation peuvent changer les modèles de base, et rien d'autre."""
         b = cfg["backtest"]
+        study = cfg.get("confirmation", {}).get(which, {})
         return cls(h=b["h"], season=b["season"], train_weeks=b["train_weeks"],
-                   reconcile_model=b["reconcile_model"], methods=tuple(b["methods"]))
+                   models=tuple(study.get("models", b["models"])),
+                   reconcile_model=study.get("reconcile_model", b["reconcile_model"]),
+                   methods=tuple(b["methods"]))
+
+    def build_models(self) -> list:
+        factory = {"SeasonalNaive": lambda: SeasonalNaive(season_length=self.season),
+                   "MSTL": lambda: MSTL(season_length=[24, 168]),
+                   "AutoETS": lambda: AutoETS(season_length=24)}
+        if self.reconcile_model not in self.models:
+            raise ValueError(f"{self.reconcile_model} doit faire partie de models={self.models}")
+        return [factory[m]() for m in self.models]
 
     @property
     def train_hours(self) -> int:
@@ -74,8 +91,7 @@ def run_origin(hier: Hierarchy, origin: pd.Timestamp, spec: BacktestSpec) -> dic
     order = hier.order
     train, test = split_at(hier.Y_df, origin, spec)
 
-    sf = StatsForecast(models=[SeasonalNaive(season_length=spec.season), MSTL(season_length=[24, 168])],
-                       freq="h", n_jobs=spec.n_jobs)
+    sf = StatsForecast(models=spec.build_models(), freq="h", n_jobs=spec.n_jobs)
     Y_hat = sf.forecast(df=train, h=spec.h, fitted=True)
     Y_fit = sf.forecast_fitted_values()
     if Y_fit["ds"].max() >= origin:
@@ -93,9 +109,9 @@ def run_origin(hier: Hierarchy, origin: pd.Timestamp, spec: BacktestSpec) -> dic
     for k in spec.methods:
         col = f"{m}/BottomUp" if k == "BottomUp" else f"{m}/MinTrace_method-{k}"
         rename[col] = METHOD_LABELS[k]
+    others = {k: MODEL_LABELS[k] for k in spec.models if k != m}
     fc = (Y_rec.rename(columns=rename)[["unique_id", "ds", *rename.values()]]
-          .merge(Y_hat[["unique_id", "ds", "SeasonalNaive"]].rename(columns={"SeasonalNaive": "SN"}),
-                 on=["unique_id", "ds"])
+          .merge(Y_hat[["unique_id", "ds", *others]].rename(columns=others), on=["unique_id", "ds"])
           .merge(test[["unique_id", "ds", "y"]], on=["unique_id", "ds"]))
     fc.insert(0, "origin", origin)
     fc.insert(3, "horizon", ((fc["ds"] - origin) / pd.Timedelta(hours=1)).astype(int) + 1)
@@ -120,16 +136,23 @@ def run_backtest(hier: Hierarchy, origins: list[pd.Timestamp], spec: BacktestSpe
     return {k: pd.concat(v, ignore_index=True) for k, v in parts.items()}
 
 
+def studies(cfg: dict) -> list[str]:
+    """Noms acceptés par `--which` : protocole principal, robustesse, puis études de confirmation."""
+    return ["main", "robustness", *cfg.get("confirmation", {})]
+
+
 def origins_from_config(cfg: dict, which: str = "main") -> list[pd.Timestamp]:
     b = cfg["backtest"]
     if which == "main":
         return [pd.Timestamp(d) for d in b["main_origins"]]
-    r = b["robustness"]
+    if which not in studies(cfg):
+        raise ValueError(f"étude inconnue : {which!r} (connues : {studies(cfg)})")
+    r = b["robustness"] if which == "robustness" else cfg["confirmation"][which]
     return list(pd.date_range(r["start"], r["end"], freq=f"{r['every_days']}D"))
 
 
 def reconcile_with_past_errors(forecasts: pd.DataFrame, hier: Hierarchy, min_past_origins: int = 20,
-                               model_col: str = "base") -> pd.DataFrame:
+                               model_col: str = "base", window: int | None = None) -> pd.DataFrame:
     """Expérience contrôlée : la même réconciliation, mais avec W estimée sur les ERREURS HORS ÉCHANTILLON
     des origines passées, au lieu des résidus in-sample.
 
@@ -137,6 +160,8 @@ def reconcile_with_past_errors(forecasts: pd.DataFrame, hier: Hierarchy, min_pas
     Ajoute deux colonnes : « MinT oos » (W pleine, shrinkage de Schäfer-Strimmer) et « WLS var oos »
     (W diagonale).
     Les origines qui ont moins de `min_past_origins` origines passées sont retirées du résultat.
+    window : si donné, W n'utilise que les `window` dernières origines terminées (fenêtre glissante) au lieu
+    de toutes. Sert à mesurer combien d'erreurs passées il faut pour bien estimer W.
     """
     from ..mint import mint_projection
 
@@ -149,8 +174,11 @@ def reconcile_with_past_errors(forecasts: pd.DataFrame, hier: Hierarchy, min_pas
     parts = []
     for o in sorted(forecasts["origin"].unique()):
         past = errors[origin_of + pd.Timedelta(hours=h) <= o]
-        if past.index.get_level_values("origin").nunique() < min_past_origins:
+        past_origins = past.index.get_level_values("origin").unique().sort_values()
+        if len(past_origins) < min_past_origins:
             continue
+        if window is not None:
+            past = past[past.index.get_level_values("origin").isin(past_origins[-window:])]
         cov = shrunk_covariance(past.to_numpy(), base="library")
         b = base.loc[o].to_numpy()
         out = pd.DataFrame({"origin": o, "ds": base.loc[o].index})

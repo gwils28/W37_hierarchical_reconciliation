@@ -1,4 +1,4 @@
-.PHONY: install test test-fast lint mint job biais quantiles eco2mix eco2mix-robustness bayesrecon notebooks lab clean
+.PHONY: install test test-fast lint mint job biais quantiles eco2mix eco2mix-robustness eco2mix-confirmation bayesrecon notebooks lab clean
 
 install:        ## crée .venv et installe le projet + groupes dev/notebooks (uv.lock)
 	uv sync
@@ -33,6 +33,12 @@ eco2mix:        ## bloc 5 : télécharger (1re fois), préparer, backtester (4 o
 eco2mix-robustness:  ## bloc 5 : étude de robustesse, 119 origines de 2024 (≈ 40 min)
 	uv run w37 eco2mix backtest --which robustness
 	uv run w37 eco2mix report --which robustness
+
+eco2mix-confirmation:  ## bloc 5 : études de confirmation (année 2023, modèle AutoETS ; ≈ 25 min)
+	uv run w37 eco2mix backtest --which annee_2023
+	uv run w37 eco2mix backtest --which ets_2024
+	uv run w37 eco2mix benchmark --which annee_2023
+	uv run w37 eco2mix benchmark --which ets_2024
 
 bayesrecon:     ## bloc 6 : MinT face à BayesReconPy sur M5 (télécharge l'exemple la 1re fois)
 	uv run w37 bayesrecon run

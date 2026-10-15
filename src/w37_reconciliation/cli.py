@@ -79,6 +79,7 @@ def _cmd_quantiles(args: argparse.Namespace) -> int:
 
 def _cmd_eco2mix(args: argparse.Namespace) -> int:
     from .eco2mix import metrics, run
+    from .eco2mix.backtest import BacktestSpec
 
     cfg, paths = run.load_config(args.config or run.DEFAULT_CONFIG)
     if args.action == "download":
@@ -100,11 +101,30 @@ def _cmd_eco2mix(args: argparse.Namespace) -> int:
         print(metrics.summary_table(by_level, order).round(3).to_string())
         print(f"\nIncohérence max (MW) après réconciliation : {inc.to_numpy().max():.2e}   [OK] < {tol:g}")
         base_gap = metrics.incoherence(fc, hier, "base").max()
-        print(f"Incohérence max (MW) des prévisions de base MSTL : {base_gap:.1f}")
+        model = BacktestSpec.from_config(cfg, args.which).reconcile_model
+        print(f"Incohérence max (MW) des prévisions de base {model} : {base_gap:.1f}")
         k = metrics.key_figure(by_level)
         for level, v in k.items():
             print(f"MinT shrink vs BU, {level:7s} : {v['mean']:+.2%} ± {v['std']:.2%} "
                   f"(meilleur à {v['wins']}/{v['n_origins']} origines)")
+    elif args.action == "benchmark":
+        from .eco2mix import benchmark as bm
+
+        hier = run.load_hierarchy(cfg, paths)
+        res = run.load_results(paths, args.which)
+        fc = bm.with_baselines(res["forecasts"], hier, run.load_national(paths))
+        by_level = bm.by_level(fc, res["scales"], hier)
+        order = [*bm.BENCHMARK_ORDER]
+        base = "ETS (base)" if args.which == "ets_2024" else "MSTL (base)"
+        t = metrics.summary_table(by_level, [m for m in order if m in set(by_level["method"])])
+        t.index = [base if m == "base" else bm.DISPLAY.get(m, m) for m in t.index]
+        print(f"Benchmark ({args.which}, {fc['origin'].nunique()} origines) : MASE moyen et écart-type\n")
+        print(t.round(3).to_string())
+        g = bm.gain_table(by_level, ["SN", "base", "BU"], order) * 100
+        g.index = [base if m == "base" else bm.DISPLAY.get(m, m) for m in g.index]
+        g = g.rename(columns={"SN": "vs SN 168 h", "base": f"vs {base}", "BU": "vs BU"}, level=1)
+        print("\nGain agrégé (%) = 1 − MASE moyen / MASE moyen de la référence ; positif = mieux\n")
+        print(g.round(1).to_string())
     return 0
 
 
@@ -158,9 +178,10 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=_cmd_quantiles)
 
     p = sub.add_parser("eco2mix", help="bloc 5 : mini-projet éCO2mix (télécharger, préparer, backtester)")
-    p.add_argument("action", choices=["download", "prepare", "backtest", "report"])
-    p.add_argument("--which", choices=["main", "robustness"], default="main",
-                   help="protocole principal (4 origines) ou étude de robustesse (2024 entière)")
+    p.add_argument("action", choices=["download", "prepare", "backtest", "report", "benchmark"])
+    p.add_argument("--which", default="main",
+                   help="main (4 origines), robustness (2024 entière), ou une étude de confirmation de "
+                        "configs/eco2mix.yaml : annee_2023, ets_2024")
     p.add_argument("--config", type=Path, default=None, help="défaut : configs/eco2mix.yaml")
     p.add_argument("--force", action="store_true", help="retélécharger même si le fichier est présent")
     p.set_defaults(func=_cmd_eco2mix)

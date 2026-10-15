@@ -46,6 +46,18 @@ make eco2mix-robustness                         # 119 origines de 2024, ≈ 40 m
 Elle est indispensable pour conclure (notebook 04) : les 4 origines du protocole principal ne suffisent pas à
 classer les méthodes.
 
+### Les études de confirmation et le benchmark
+
+```bash
+make eco2mix-confirmation                       # 2023 (≈ 9 min), puis AutoETS sur 2024 (≈ 17 min)
+uv run w37 eco2mix benchmark --which robustness # baselines naïves + RTE J−1 + gains, sans réentraîner
+```
+
+Chaque étude est déclarée sous `confirmation:` dans `configs/eco2mix.yaml` et ne change qu'une chose (l'année,
+ou le modèle de base) ; `--which` accepte son nom. `benchmark` ajoute à n'importe quelle étude les 3 baselines
+naïves et la prévision RTE (France seule), calculées à la volée, et imprime le MASE et le gain agrégé contre
+SN 168 h, le modèle de base et le bottom-up.
+
 ## 2. Les notebooks
 
 ```bash
@@ -58,6 +70,7 @@ uv run jupyter lab 05_mini_projet_eco2mix
 | 2 | `notebooks/02_modeles_de_base_et_hypotheses.ipynb` | 20 min | idem (réentraîne une origine, ≈ 10 s) |
 | 3 | `notebooks/03_reconciliation_protocole_principal.ipynb` | 15 min | `backtest` |
 | 4 | `notebooks/04_robustesse_et_tests.ipynb` | 25 min | `backtest --which robustness` |
+| 5 | `notebooks/05_benchmark_et_confirmations.ipynb` | 30 min | `robustness`, `annee_2023`, `ets_2024` (réentraîne 4 origines, ≈ 30 s) |
 | - | `reconciliation_eco2mix.ipynb` | - | rien : il lance tout lui-même |
 
 Pour une révision express, lisez les encadrés « À retenir » et « Test d'hypothèse ». Les notebooks sont versionnés **avec leurs sorties**
@@ -73,7 +86,8 @@ Pour tout régénérer :
 
 | Question | Où | Quoi changer |
 |---|---|---|
-| Le classement tient-il sur 2023 ? | `configs/eco2mix.yaml` | `robustness: {start: "2023-01-10", end: "2023-12-30", every_days: 3}`, puis relancer |
+| Le classement tient-il sur 2022 ? | `configs/eco2mix.yaml` | sous `confirmation:`, `annee_2022: {start: "2022-01-11", end: "2022-12-30", every_days: 3}`, puis `backtest --which annee_2022` |
+| Et avec un autre modèle de base ? | `eco2mix/backtest.py` (`build_models`) + `configs/eco2mix.yaml` | ajouter le modèle à la fabrique, puis une étude avec `models` et `reconcile_model` |
 | Et à un horizon plus long ? | `configs/eco2mix.yaml` | `h: 48` |
 | MinT avec une fenêtre plus courte ? | `configs/eco2mix.yaml` | `train_weeks: 26` |
 | Combien d'origines faut-il pour que le test devienne net ? | notebook 04, § 2 | sous-échantillonner les origines et regarder les p-valeurs |
@@ -87,6 +101,7 @@ ou précise ») avec sa raison.
 
 ```bash
 uv run pytest tests/unit/test_eco2mix.py              # 18 tests, < 2 s, sans réseau
+uv run pytest tests/unit/test_eco2mix_benchmark.py    # 12 tests, < 2 s : baselines, RTE, gains, études
 uv run pytest tests/integration/test_eco2mix_backtest.py   # 4 tests, ≈ 3 s, entraîne MSTL
 ```
 
@@ -102,6 +117,12 @@ uv run pytest tests/integration/test_eco2mix_backtest.py   # 4 tests, ≈ 3 s, e
 | `test_naive_t_overrejects_on_autocorrelated_noise_but_hac_does_not` | le test de biais garde sa taille sur des données autocorrélées |
 | `test_past_error_reconciliation_only_uses_finished_origins` | l'expérience sur W n'utilise que le passé |
 | `test_every_reconciliation_is_coherent` (intégration) | le pipeline complet livre des prévisions cohérentes |
+| `test_naive_baselines_read_the_right_past_values`, `test_naive_baselines_are_coherent_by_construction` | les baselines naïves lisent le bon passé et somment exactement |
+| `test_rte_debiasing_only_uses_errors_before_the_origin` | la correction de biais de RTE ne voit pas le futur |
+| `test_aggregate_gain_is_the_ratio_of_mean_mase`, `test_convergence_ends_on_the_aggregate_gain` | le gain du benchmark est celui qu'on relit dans le tableau |
+| `test_rank_probabilities_count_ties_as_shared_first_place` | BU et MSTL, identiques en région, sont classés ex aequo |
+| `test_a_confirmation_study_changes_only_what_it_declares` | une étude de confirmation ne change que ce qu'elle déclare |
+| `test_past_error_window_keeps_only_the_last_finished_origins` | la fenêtre de l'expérience sur W oublie bien le passé lointain |
 
 ## 5. Dépannage
 

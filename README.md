@@ -17,7 +17,7 @@ uv run w37 bayesrecon run  # bloc 6 : MinT face à BayesReconPy sur des ventes i
 uv run jupyter lab
 ```
 
-Les mêmes commandes existent en raccourci `make` : `make install | test | test-fast | lint | mint | job | biais | quantiles | eco2mix | eco2mix-robustness |
+Les mêmes commandes existent en raccourci `make` : `make install | test | test-fast | lint | mint | job | biais | quantiles | eco2mix | eco2mix-robustness | eco2mix-confirmation |
 bayesrecon | notebooks | lab`.
 Tutoriels pas à pas : [bloc 2](02_mint_from_scratch/TUTORIEL.md) · [bloc 3](03_system_design/TUTORIEL.md) ·
 [bloc 4](04_fondamentaux/TUTORIEL.md) · [bloc 5](05_mini_projet_eco2mix/TUTORIEL.md) ·
@@ -39,7 +39,7 @@ Tutoriels pas à pas : [bloc 2](02_mint_from_scratch/TUTORIEL.md) · [bloc 3](03
 │   ├── mint/                                    # bloc 2 : shrinkage, projection, assertions, expérience
 │   ├── pipeline/                                # bloc 3 : contrat, hash de S, choix de méthode, gate, job
 │   ├── fundamentals/                            # bloc 4 : biais, quantiles A/B/C, bootstrap, diagnostics
-│   ├── eco2mix/                                 # bloc 5 : source, préparation, backtest, métriques, tests
+│   ├── eco2mix/                                 # bloc 5 : source, préparation, backtest, métriques, tests, benchmark
 │   ├── bayesrecon/                              # bloc 6 : exemple M5, 4 réconciliations, scores, exemple exact
 │   ├── download.py                              # téléchargement avec manifeste sha256 (blocs 5 et 6)
 │   ├── viz.py                                   # style des graphiques
@@ -67,7 +67,7 @@ Tutoriels pas à pas : [bloc 2](02_mint_from_scratch/TUTORIEL.md) · [bloc 3](03
 │   ├── README.md                                # démarche, hypothèses testées, résultats, recommandation
 │   ├── TUTORIEL.md                              # relancer le bloc 5, expériences, dépannage
 │   ├── reconciliation_eco2mix.ipynb             # Definition of Done, de bout en bout
-│   ├── notebooks/                               # 4 notebooks pédagogiques, exécutés
+│   ├── notebooks/                               # 5 notebooks pédagogiques, exécutés
 │   └── figures/                                 # figures SVG + figure clé PNG
 └── 06_bayesreconpy/
     ├── README.md                                # vérification du paquet, réponse chiffrée, validation, recommandation
@@ -91,7 +91,7 @@ bloc 3.
 | 2 | Ingénierie & code | MinT(shrink) de zéro : 3 assertions vertes, écart à la bibliothèque **1,07e-5** (< 1e-3) ; 4 notebooks | fait |
 | 3 | System design | Architecture + `reconciliation.yaml` v3 + job et gate exécutables et testés | fait |
 | 4 | Fondamentaux | Biais propagé (seuil ≈ 4,5), quantiles A/B/C (B : **0,764** au lieu de 0,900), bootstrap joint, Gauss-Markov ; 3 notebooks | fait |
-| 5 | Mini-projet éCO2mix | 12 régions → France, 4 + 119 origines ; cohérence exacte ; BU meilleur, MinT shrink **+2,3 %** (W in-sample fausse, démontré) ; 5 notebooks | fait |
+| 5 | Mini-projet éCO2mix | 12 régions → France, 4 + 119 origines ; cohérence exacte ; BU meilleur, MinT shrink **+2,3 %** (W in-sample fausse, démontré) ; benchmark face aux baselines et à RTE, confirmé sur 2023 et avec AutoETS ; 6 notebooks | fait |
 | 6 | BayesReconPy | MinT gaussien : **11 moyennes et 98 % des bornes basses négatives** sur M5 ; conditionnement : 0 ; TD-cond le plus précis ; vignette R reproduite ; 2 notebooks | fait |
 
 ## Ce qu'il faut retenir
@@ -125,6 +125,11 @@ bloc 3.
    sont des restes de lissage, corrélés à 0,11 entre régions, alors que les vraies erreurs le sont à 0,56. Avec W
    estimée sur les erreurs passées, MinT revient au niveau du bottom-up
    ([notebook 02](05_mini_projet_eco2mix/notebooks/02_modeles_de_base_et_hypotheses.ipynb)).
+   Confirmé deux fois de plus : la perte se reproduit en 2023, et disparaît avec AutoETS, dont les résidus
+   in-sample sont de vraies erreurs (corrélés à 0,49-0,57 entre régions, contre 0,66 en réalité). Sur 356 origines
+   et deux modèles de base, le bottom-up n'est jamais battu de façon significative, et la prévision RTE débiaisée,
+   qui a la météo, fait 12 à 14 % de mieux que toute réconciliation
+   ([notebook 05](05_mini_projet_eco2mix/notebooks/05_benchmark_et_confirmations.ipynb)).
 10. **Vérifier les données avant de prévoir.** La source éCO2mix a un défaut de changement d'heure chaque année
     (doublons en mars, heure manquante en octobre), et la Nouvelle-Aquitaine s'arrête fin 2024
     ([notebook 01](05_mini_projet_eco2mix/notebooks/01_donnees_et_hierarchie.ipynb)).
